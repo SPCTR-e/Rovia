@@ -20,6 +20,8 @@ export const Colors = {
     border: '#EBE5DE',
     primary: '#E05D5D',
     textSecondary: '#68645E',
+    error: '#D32F2F',
+    success: '#388E3C',
   },
   dark: {
     text: '#ECEDEE',
@@ -32,6 +34,8 @@ export const Colors = {
     border: '#3E3832',
     primary: '#E05D5D',
     textSecondary: '#9BA1A6',
+    error: '#EF5350',
+    success: '#66BB6A',
   },
 };
 

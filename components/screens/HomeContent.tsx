@@ -5,9 +5,10 @@ import { MUSEUMS } from '@/data/museums';
 import { RESTAURANTS } from '@/data/restaurants';
 import { SIGHTS } from '@/data/sights';
 import { useColorScheme } from '@/hooks/use-color-scheme';
-import i18n from '@/i18n';
+import i18n, { SUPPORTED_LANGUAGES, tData } from '@/i18n';
 import { useRouter } from 'expo-router';
-import { Dimensions, Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { useState } from 'react';
+import { Dimensions, FlatList, Image, Modal, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
@@ -36,10 +37,10 @@ export function HomeContent({ onNavigate }: { onNavigate: (path: string, cat?: s
                     >
                         <Image source={item.image} style={styles.cardImage} />
                         <View style={styles.cardContent}>
-                            <Text style={[styles.cardTitle, { color: theme.text }]} numberOfLines={1}>{item.name}</Text>
+                            <Text style={[styles.cardTitle, { color: theme.text }]} numberOfLines={1}>{tData(item, 'name')}</Text>
                             <View style={styles.cardMeta}>
                                 <IconSymbol name="mappin.and.ellipse" size={12} color={theme.primary} />
-                                <Text style={[styles.cardLocation, { color: theme.textSecondary }]} numberOfLines={1}>{item.location}</Text>
+                                <Text style={[styles.cardLocation, { color: theme.textSecondary }]} numberOfLines={1}>{tData(item, 'location')}</Text>
                             </View>
                         </View>
                     </TouchableOpacity>
@@ -48,11 +49,20 @@ export function HomeContent({ onNavigate }: { onNavigate: (path: string, cat?: s
         </View>
     );
 
+    const [languageModalVisible, setLanguageModalVisible] = useState(false);
+    const [currentLanguage, setCurrentLanguage] = useState(i18n.locale);
+
+    const handleLanguageSelect = async (langCode: string) => {
+        await import('@/i18n').then(module => module.saveLanguage(langCode));
+        setCurrentLanguage(langCode); // Trigger re-render
+        setLanguageModalVisible(false);
+    };
+
     const exploreCategories = [
-        { id: 'sights', name: 'Sights', icon: 'camera.fill', color: '#FFD1D1', route: '/explore?category=sights' },
-        { id: 'restaurants', name: 'Restaurants', icon: 'fork.knife', color: '#C1E1C1', route: '/explore?category=restaurants' },
-        { id: 'museums', name: 'Museums', icon: 'building.columns.fill', color: '#A0C4FF', route: '/explore?category=museums' },
-        { id: 'activities', name: 'Activities', icon: 'sparkles', color: '#FFE5B4', route: '/explore?category=activities' },
+        { id: 'sights', name: i18n.t('sights'), icon: 'camera.fill', color: '#FFD1D1', route: '/explore?category=sights' },
+        { id: 'restaurants', name: i18n.t('restaurants'), icon: 'fork.knife', color: '#C1E1C1', route: '/explore?category=restaurants' },
+        { id: 'museums', name: i18n.t('museums'), icon: 'building.columns.fill', color: '#A0C4FF', route: '/explore?category=museums' },
+        { id: 'activities', name: i18n.t('activities'), icon: 'sparkles', color: '#FFE5B4', route: '/explore?category=activities' },
     ];
 
     return (
@@ -61,15 +71,18 @@ export function HomeContent({ onNavigate }: { onNavigate: (path: string, cat?: s
                 {/* Header */}
                 <View style={styles.header}>
                     <View>
-                        <Text style={[styles.greeting, { color: theme.textSecondary }]}>Bienvenue à</Text>
+                        <Text style={[styles.greeting, { color: theme.textSecondary }]}>{i18n.t('welcome')}</Text>
                         <Text style={[styles.title, { color: theme.text }]}>Strasbourg</Text>
                     </View>
-                    <View style={[styles.avatarContainer, { borderColor: theme.border }]}>
+                    <TouchableOpacity
+                        onPress={() => setLanguageModalVisible(true)}
+                        style={[styles.avatarContainer, { borderColor: theme.border }]}
+                    >
                         <Image
                             source={require('@/assets/images/sights/petite-france.jpg')}
                             style={styles.avatar}
                         />
-                    </View>
+                    </TouchableOpacity>
                 </View>
 
                 {/* Hero Card */}
@@ -84,15 +97,15 @@ export function HomeContent({ onNavigate }: { onNavigate: (path: string, cat?: s
                             <View style={[styles.badge, { backgroundColor: theme.primary }]}>
                                 <Text style={styles.badgeText}>{i18n.t('mustSee') || 'MUST SEE'}</Text>
                             </View>
-                            <Text style={styles.heroTitle}>{featuredSight.name}</Text>
-                            <Text style={styles.heroSubtitle}>{featuredSight.shortDescription}</Text>
+                            <Text style={styles.heroTitle}>{tData(featuredSight, 'name')}</Text>
+                            <Text style={styles.heroSubtitle}>{tData(featuredSight, 'shortDescription')}</Text>
                         </View>
                     </TouchableOpacity>
                 )}
 
                 {/* Explore Categories */}
                 <View style={styles.sectionHeader}>
-                    <Text style={[styles.sectionTitle, { color: theme.text }]}>Explore</Text>
+                    <Text style={[styles.sectionTitle, { color: theme.text }]}>{i18n.t('exploreTitle')}</Text>
                 </View>
                 <View style={styles.exploreGrid}>
                     {exploreCategories.map((cat) => (
@@ -111,7 +124,7 @@ export function HomeContent({ onNavigate }: { onNavigate: (path: string, cat?: s
 
                 {/* Quick Actions */}
                 <View style={styles.sectionHeader}>
-                    <Text style={[styles.sectionTitle, { color: theme.text }]}>Quick Actions</Text>
+                    <Text style={[styles.sectionTitle, { color: theme.text }]}>{i18n.t('quickActions')}</Text>
                 </View>
                 <View style={styles.quickActionsGrid}>
                     <TouchableOpacity
@@ -121,7 +134,7 @@ export function HomeContent({ onNavigate }: { onNavigate: (path: string, cat?: s
                         <View style={[styles.actionIcon, { backgroundColor: '#E3F2FD' }]}>
                             <IconSymbol name="map.fill" size={24} color="#1976D2" />
                         </View>
-                        <Text style={[styles.actionLabel, { color: theme.text }]}>Map</Text>
+                        <Text style={[styles.actionLabel, { color: theme.text }]}>{i18n.t('mapView')}</Text>
                     </TouchableOpacity>
                     <TouchableOpacity
                         style={[styles.actionButton, { backgroundColor: theme.cardBackground, borderColor: theme.border }]}
@@ -130,7 +143,7 @@ export function HomeContent({ onNavigate }: { onNavigate: (path: string, cat?: s
                         <View style={[styles.actionIcon, { backgroundColor: '#F1F8E9' }]}>
                             <IconSymbol name="tram.fill" size={24} color="#388E3C" />
                         </View>
-                        <Text style={[styles.actionLabel, { color: theme.text }]}>Tickets</Text>
+                        <Text style={[styles.actionLabel, { color: theme.text }]}>{i18n.t('tickets')}</Text>
                     </TouchableOpacity>
                 </View>
 
@@ -146,6 +159,58 @@ export function HomeContent({ onNavigate }: { onNavigate: (path: string, cat?: s
                 {/* Bottom Spacer */}
                 <View style={{ height: 40 }} />
             </ScrollView>
+
+            <Modal
+                visible={languageModalVisible}
+                animationType="slide"
+                transparent={true}
+                onRequestClose={() => setLanguageModalVisible(false)}
+            >
+                <View style={[styles.modalOverlay, { backgroundColor: 'rgba(0,0,0,0.5)' }]}>
+                    <View style={[styles.modalContent, { backgroundColor: theme.cardBackground }]}>
+                        <View style={styles.modalHeader}>
+                            <Text style={[styles.modalTitle, { color: theme.text }]}>{i18n.t('selectLanguage')}</Text>
+                            <TouchableOpacity onPress={() => setLanguageModalVisible(false)}>
+                                <IconSymbol name="xmark.circle.fill" size={24} color={theme.textSecondary} />
+                            </TouchableOpacity>
+                        </View>
+
+                        <FlatList
+                            data={SUPPORTED_LANGUAGES}
+                            keyExtractor={(item) => item.code}
+                            renderItem={({ item }) => (
+                                <TouchableOpacity
+                                    style={[
+                                        styles.languageItem,
+                                        { borderBottomColor: theme.border },
+                                        currentLanguage === item.code && { backgroundColor: theme.primary + '20' }
+                                    ]}
+                                    onPress={() => handleLanguageSelect(item.code)}
+                                >
+                                    <Text style={[
+                                        styles.languageText,
+                                        { color: theme.text },
+                                        currentLanguage === item.code && { color: theme.primary, fontWeight: '700' }
+                                    ]}>
+                                        {item.name}
+                                    </Text>
+                                    {currentLanguage === item.code && (
+                                        <IconSymbol name="checkmark" size={20} color={theme.primary} />
+                                    )}
+                                </TouchableOpacity>
+                            )}
+                            style={{ maxHeight: 400 }}
+                        />
+                        <View style={{ padding: 16 }}>
+                            <Text style={{ textAlign: 'center', color: theme.textSecondary, fontSize: 12 }}>
+                                {i18n.t('languageName') === 'English' ?
+                                    'Note: You may need to restart the app for changes to fully apply.' :
+                                    'Note: Redémarrez l\'application pour appliquer les changements.'}
+                            </Text>
+                        </View>
+                    </View>
+                </View>
+            </Modal>
         </SafeAreaView>
     );
 }
@@ -279,6 +344,36 @@ const styles = StyleSheet.create({
         fontSize: 11,
         marginLeft: 4,
         fontWeight: '500',
+    },
+    modalOverlay: {
+        flex: 1,
+        justifyContent: 'center',
+        padding: 20
+    },
+    modalContent: {
+        borderRadius: 20,
+        padding: 20,
+        maxHeight: '80%'
+    },
+    modalHeader: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: 16
+    },
+    modalTitle: {
+        fontSize: 20,
+        fontWeight: '700'
+    },
+    languageItem: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        paddingVertical: 16,
+        borderBottomWidth: 1
+    },
+    languageText: {
+        fontSize: 16
     },
     exploreGrid: {
         flexDirection: 'row',

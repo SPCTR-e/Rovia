@@ -1,3 +1,5 @@
+import { TRAM_GEOJSON } from './tram_geojson';
+
 export const TRAM_A_PATH = [
     { latitude: 48.5985586482216, longitude: 7.6941817243964294 },
     { latitude: 48.59846155749295, longitude: 7.694877717350778 },
@@ -2030,16 +2032,17 @@ export interface TransportLine {
     name: string;
     trajectory: string;
     color: string;
-    path: any[];
+    path?: any[];
+    geoJson?: any;
 }
 
 export const TRANSPORT_LINES: TransportLine[] = [
-    { id: 'TRAM_A', type: 'tram', name: 'Ligne A', trajectory: 'Parc des Sports - Illkirch Graffenstaden', color: '#ac001d', path: TRAM_A_PATH },
-    { id: 'TRAM_B', type: 'tram', name: 'Ligne B', trajectory: 'Hoenheim Gare - Lingolsheim Tiergaertel', color: '#0099CC', path: TRAM_B_PATH },
-    { id: 'TRAM_C', type: 'tram', name: 'Ligne C', trajectory: 'Gare Centrale - Neuhof Rodolphe Reuss', color: '#F68002', path: TRAM_C_PATH },
-    { id: 'TRAM_D', type: 'tram', name: 'Ligne D', trajectory: 'Poteries - Kehl Rathaus', color: '#007934', path: TRAM_D_PATH },
-    { id: 'TRAM_E', type: 'tram', name: 'Ligne E', trajectory: 'Robertsau L\'Escale - Campus d\'Illkirch', color: '#660099', path: TRAM_E_PATH },
-    { id: 'TRAM_F', type: 'tram', name: 'Ligne F', trajectory: 'Place d\'Islande - Wolfisheim Henri Rendu', color: '#8CC63E', path: TRAM_F_PATH },
+    { id: 'TRAM_A', type: 'tram', name: 'Ligne A', trajectory: 'Parc des Sports - Illkirch Graffenstaden', color: '#ac001d', geoJson: TRAM_GEOJSON['A'] },
+    { id: 'TRAM_B', type: 'tram', name: 'Ligne B', trajectory: 'Hoenheim Gare - Lingolsheim Tiergaertel', color: '#0099CC', geoJson: TRAM_GEOJSON['B'] },
+    { id: 'TRAM_C', type: 'tram', name: 'Ligne C', trajectory: 'Gare Centrale - Neuhof Rodolphe Reuss', color: '#F68002', geoJson: TRAM_GEOJSON['C'] },
+    { id: 'TRAM_D', type: 'tram', name: 'Ligne D', trajectory: 'Poteries - Kehl Rathaus', color: '#007934', geoJson: TRAM_GEOJSON['D'] },
+    { id: 'TRAM_E', type: 'tram', name: 'Ligne E', trajectory: 'Robertsau L\'Escale - Campus d\'Illkirch', color: '#660099', geoJson: TRAM_GEOJSON['E'] },
+    { id: 'TRAM_F', type: 'tram', name: 'Ligne F', trajectory: 'Place d\'Islande - Wolfisheim Henri Rendu', color: '#8CC63E', geoJson: TRAM_GEOJSON['F'] },
     { id: 'BUS_G', type: 'bus', name: 'Ligne G', trajectory: 'Espace Européen de l\'Entreprise - Rotterdam', color: '#FFCC00', path: BUS_G_PATH },
     { id: 'BUS_H', type: 'bus', name: 'Ligne H', trajectory: 'Gare Centrale - Parlement Européen', color: '#922b3e', path: BUS_H_PATH },
 ];

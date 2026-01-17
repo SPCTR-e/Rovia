@@ -34,6 +34,9 @@ const MAPPING = {
   'building.columns.fill': 'museum',
   'figure.walk': 'directions-walk',
   'camera.fill': 'camera-alt',
+  'lightbulb.fill': 'lightbulb',
+  'airplane': 'flight',
+  'person.3.fill': 'groups',
 } as IconMapping;
 
 /**

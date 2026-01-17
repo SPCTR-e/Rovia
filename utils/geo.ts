@@ -131,3 +131,5 @@ export function toGeoJSONLineString(coordinates: Coordinate[]) {
         coordinates: coordinates.map(c => [c.longitude, c.latitude]),
     };
 }
+
+

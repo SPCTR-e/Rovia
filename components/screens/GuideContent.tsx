@@ -45,7 +45,7 @@ export function GuideContent({ onClose }: { onClose?: () => void }) {
                     )}
                 </View>
 
-                <GuideSection title="Where to Buy" icon="house.fill">
+                <GuideSection title={i18n.t('whereToBuy')} icon="house.fill">
                     <View style={styles.horizontalRow}>
                         <View style={[styles.sideIconWrapper, { backgroundColor: theme.cardBackground, shadowColor: theme.primary }]}>
                             <Image
@@ -56,22 +56,22 @@ export function GuideContent({ onClose }: { onClose?: () => void }) {
                         </View>
                         <View style={{ flex: 1, justifyContent: 'center' }}>
                             <Text style={[styles.bulletText, { color: theme.textSecondary }]}>
-                                Ticket Machines: At all tram stops and major bus stops.
+                                {i18n.t('ticketMachines')}
                             </Text>
                             <View style={styles.hintRow}>
                                 <IconSymbol name="arrow.left" size={14} color={theme.textSecondary} style={{ marginRight: 6 }} />
                                 <Text style={[styles.subtleHint, { color: theme.textSecondary }]}>
-                                    look for this, in the middle of the platform
+                                    {i18n.t('lookForMachine')}
                                 </Text>
                             </View>
                         </View>
                     </View>
-                    <BulletPoint text="CTS Mobile App: Purchase via smartphone (NFC compatible)." />
-                    <BulletPoint text="Onboard the Bus: Emergency tickets available from the driver (€2.50)." />
-                    <BulletPoint text="Partner Stores: Newsagents and tobacco shops displaying the CTS sign." />
+                    <BulletPoint text={i18n.t('ctsApp')} />
+                    <BulletPoint text={i18n.t('onboardBus')} />
+                    <BulletPoint text={i18n.t('partnerStores')} />
                 </GuideSection>
 
-                <GuideSection title="How to Validate" icon="paperplane.fill">
+                <GuideSection title={i18n.t('howToValidate')} icon="paperplane.fill">
                     <View style={styles.horizontalRow}>
                         <View style={[styles.sideIconWrapper, { backgroundColor: theme.cardBackground, shadowColor: theme.primary }]}>
                             <Image
@@ -82,43 +82,77 @@ export function GuideContent({ onClose }: { onClose?: () => void }) {
                         </View>
                         <View style={{ flex: 1, justifyContent: 'center' }}>
                             <Text style={[styles.bulletText, { color: theme.textSecondary }]}>
-                                Trams & BRT (G/H): Validate on the platform machine BEFORE boarding.
+                                {i18n.t('validatePlatform')}
                             </Text>
                             <View style={styles.hintRow}>
                                 <IconSymbol name="arrow.left" size={14} color={theme.textSecondary} style={{ marginRight: 6 }} />
                                 <Text style={[styles.subtleHint, { color: theme.textSecondary }]}>
-                                    look for these, usually on the sides of the platform and one next to the ticket machine
+                                    {i18n.t('lookForValidator')}
                                 </Text>
                             </View>
                         </View>
                     </View>
                     <Text style={[styles.note, { color: theme.textSecondary }]}>
-                        Validation is mandatory for every journey, including transfers.
+                        {i18n.t('validationMandatoryNote')}
                     </Text>
-                    <BulletPoint text="Regular Buses: Validate inside the bus using the red machines." />
-                    <BulletPoint text="Contactless: Hold your card or phone against the yellow area until it beeps." />
+                    <BulletPoint text={i18n.t('busValidation')} />
+                    <BulletPoint text={i18n.t('contactlessValidation')} />
                 </GuideSection>
 
-                <GuideSection title="Main Ticket Types" icon="tram.fill">
+                <GuideSection title={i18n.t('mainTicketTypes')} icon="tram.fill">
                     <View style={styles.priceRow}>
-                        <Text style={[styles.priceLabel, { color: theme.text }]}>Single Ticket</Text>
+                        <Text style={[styles.priceLabel, { color: theme.text }]}>{i18n.t('singleTicket')}</Text>
                         <Text style={styles.priceValue}>1.90 €</Text>
                     </View>
                     <View style={styles.priceRow}>
-                        <Text style={[styles.priceLabel, { color: theme.text }]}>24h Individual</Text>
+                        <Text style={[styles.priceLabel, { color: theme.text }]}>{i18n.t('dayIndividual')}</Text>
                         <Text style={styles.priceValue}>4.60 €</Text>
                     </View>
                     <View style={styles.priceRow}>
-                        <Text style={[styles.priceLabel, { color: theme.text }]}>24h Trio (2-3 people)</Text>
+                        <Text style={[styles.priceLabel, { color: theme.text }]}>{i18n.t('dayTrio')}</Text>
                         <Text style={styles.priceValue}>10.20 €</Text>
                     </View>
                     <View style={styles.priceRow}>
-                        <Text style={[styles.priceLabel, { color: theme.text }]}>72h Individual</Text>
+                        <Text style={[styles.priceLabel, { color: theme.text }]}>{i18n.t('threeDayIndividual')}</Text>
                         <Text style={styles.priceValue}>10.20 €</Text>
                     </View>
                     <Text style={[styles.priceNote, { color: theme.textSecondary }]}>
-                        * +0.20 € fee for the first paper ticket purchase.
+                        {i18n.t('ticketFeeDetailed')}
                     </Text>
+                </GuideSection>
+
+                <GuideSection title={i18n.t('travelTips')} icon="lightbulb.fill">
+                    <View style={styles.horizontalRow}>
+                        <View style={[styles.sideIconWrapper, { backgroundColor: theme.cardBackground, shadowColor: theme.primary }]}>
+                            <IconSymbol name="airplane" size={32} color={theme.primary} />
+                        </View>
+                        <View style={{ flex: 1, justifyContent: 'center', gap: 4 }}>
+                            <Text style={[styles.bulletText, { color: theme.text, fontWeight: 'bold' }]}>
+                                {i18n.t('airportConnection')}
+                            </Text>
+                            <Text style={[styles.subtleHint, { color: theme.textSecondary, fontStyle: 'normal' }]}>
+                                {i18n.t('airportConnectionDesc')}
+                            </Text>
+                        </View>
+                    </View>
+
+                    <View style={[styles.horizontalRow, { marginBottom: 0 }]}>
+                        <View style={[styles.sideIconWrapper, { backgroundColor: theme.cardBackground, shadowColor: theme.primary }]}>
+                            <IconSymbol name="person.3.fill" size={32} color={theme.primary} />
+                        </View>
+                        <View style={{ flex: 1, justifyContent: 'center', gap: 4 }}>
+                            <Text style={[styles.bulletText, { color: theme.text, fontWeight: 'bold' }]}>
+                                {i18n.t('familyTicketTip')}
+                            </Text>
+                            <Text style={[styles.subtleHint, { color: theme.textSecondary, fontStyle: 'normal' }]}>
+                                {i18n.t('familyTicketDesc')}
+                            </Text>
+                        </View>
+                    </View>
+
+                    <View style={{ marginTop: 16 }}>
+                        <BulletPoint text={i18n.t('freeTravel') + ': ' + i18n.t('freeTravelDesc')} />
+                    </View>
                 </GuideSection>
             </ScrollView>
         </View>

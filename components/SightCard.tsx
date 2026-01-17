@@ -2,7 +2,7 @@ import { Colors } from '@/constants/theme';
 import { CATEGORIES } from '@/data/categories';
 import { Sight } from '@/data/sights';
 import { useColorScheme } from '@/hooks/use-color-scheme';
-import i18n from '@/i18n';
+import i18n, { tData } from '@/i18n';
 import React, { useRef } from 'react';
 import { Animated, Image, Pressable, StyleSheet, Text, View } from 'react-native';
 
@@ -57,7 +57,7 @@ export const SightCard = React.memo(({ sight, onPress, style }: SightCardProps) 
                 </View>
 
                 <View style={styles.content}>
-                    <Text style={[styles.title, { color: theme.text }]} numberOfLines={2}>{sight.name}</Text>
+                    <Text style={[styles.title, { color: theme.text }]} numberOfLines={2}>{tData(sight, 'name')}</Text>
                     {/* Optional: Add rating or location here if desired for playing card look */}
                 </View>
             </Animated.View>

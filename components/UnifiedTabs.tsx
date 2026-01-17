@@ -260,7 +260,7 @@ export function UnifiedTabs() {
                     }
                 })
             }]}>
-                {renderTabItem(0, 'house.fill', 'Home')}
+                {renderTabItem(0, 'house.fill', i18n.t('home'))}
                 {renderTabItem(1, 'paperplane.fill', i18n.t('explore'))}
                 {renderTabItem(2, 'tram.fill', i18n.t('transport'))}
             </View>

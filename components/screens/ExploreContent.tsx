@@ -6,11 +6,11 @@ import { MUSEUMS } from '@/data/museums';
 import { RESTAURANTS } from '@/data/restaurants';
 import { SIGHTS } from '@/data/sights';
 import { useColorScheme } from '@/hooks/use-color-scheme';
-import i18n from '@/i18n';
+import i18n, { tData } from '@/i18n';
 import Mapbox from '@rnmapbox/maps';
 import { useRouter } from 'expo-router';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { FlatList, Image, Modal, Animated as RNAnimated, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { FlatList, Image, Linking, Modal, Platform, Animated as RNAnimated, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import Animated, { Easing, LinearTransition, SlideInDown, SlideOutDown } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -93,8 +93,24 @@ export function ExploreContent({ category, setCategory }: ExploreContentProps) {
         ...(ACTIVITIES as any[]).map(i => ({ ...i, type: 'activities' }))
     ], []);
 
+    const normalize = (str: string) => str ? str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase() : "";
+
+    // Centralized search matching logic
+    const checkSearchMatch = (item: any, searchInput: string) => {
+        if (!searchInput) return true;
+
+        const name = normalize(item.name);
+        const location = normalize(item.location);
+        const desc = normalize(item.description || item.shortDescription);
+        const tagsMatch = item.tags && item.tags.some((t: string) => normalize(t).includes(searchInput));
+
+        return name.includes(searchInput) ||
+            location.includes(searchInput) ||
+            desc.includes(searchInput) ||
+            tagsMatch;
+    };
+
     const filteredItems = useMemo(() => {
-        const normalize = (str: string) => str ? str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase() : "";
         const searchInput = normalize(search);
 
         if (!searchInput) {
@@ -108,18 +124,7 @@ export function ExploreContent({ category, setCategory }: ExploreContentProps) {
         }
 
         // Global Search Mode
-        return allItems.filter(item => {
-            const name = normalize(item.name);
-            const location = normalize(item.location);
-            const desc = normalize(item.description || item.shortDescription);
-            // Check tags if they exist
-            const tagsMatch = item.tags && item.tags.some((t: string) => normalize(t).includes(searchInput));
-
-            return name.includes(searchInput) ||
-                location.includes(searchInput) ||
-                desc.includes(searchInput) ||
-                tagsMatch;
-        });
+        return allItems.filter(item => checkSearchMatch(item, searchInput));
     }, [allItems, search, category]);
 
     // Clear selection when filter changes
@@ -127,6 +132,18 @@ export function ExploreContent({ category, setCategory }: ExploreContentProps) {
         setMapFilter(newFilter);
         setSelectedItem(null);
         setCameraCenter(CITY_CENTER);
+    };
+
+    const handleDirections = (item: any) => {
+        if (!item.coordinates) return;
+        const scheme = Platform.select({ ios: 'maps:0,0?q=', android: 'geo:0,0?q=' });
+        const latLng = `${item.coordinates.latitude},${item.coordinates.longitude}`;
+        const label = item.name;
+        const url = Platform.select({
+            ios: `${scheme}${label}@${latLng}`,
+            android: `${scheme}${latLng}(${label})`
+        });
+        if (url) Linking.openURL(url);
     };
 
     return (
@@ -209,9 +226,14 @@ export function ExploreContent({ category, setCategory }: ExploreContentProps) {
 
                             {/* Render Custom Pins for ALL items */}
                             {allItems.map((item) => {
-                                const isSelected = mapFilter === 'all' || mapFilter === item.type;
+                                const isCategoryMatch = mapFilter === 'all' || mapFilter === item.type;
+
+                                // Search Filter
+                                const searchInput = normalize(search);
+                                const isSearchMatch = checkSearchMatch(item, searchInput);
+
                                 // If not selected, do not render at all (Hiding pins completely as requested)
-                                if (!isSelected || !item.coordinates) return null;
+                                if (!isCategoryMatch || !isSearchMatch || !item.coordinates) return null;
 
                                 const color = getCategoryColor(item.type);
                                 const isFocused = selectedItem?.id === item.id;
@@ -244,6 +266,27 @@ export function ExploreContent({ category, setCategory }: ExploreContentProps) {
                         >
                             <IconSymbol name="xmark" size={20} color={theme.text} />
                         </TouchableOpacity>
+
+                        {/* Search Pill */}
+                        <View style={[
+                            styles.mapSearchPill,
+                            { backgroundColor: theme.cardBackground, borderColor: theme.border }
+                        ]}>
+                            <IconSymbol name="magnifyingglass" size={18} color={theme.icon} />
+                            <TextInput
+                                placeholder={i18n.t('searchPlaceholder')}
+                                placeholderTextColor={theme.icon}
+                                style={[styles.mapSearchInput, { color: theme.text }]}
+                                value={search}
+                                onChangeText={setSearch}
+                                returnKeyType="search"
+                            />
+                            {search.length > 0 && (
+                                <TouchableOpacity onPress={() => setSearch('')} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
+                                    <IconSymbol name="xmark.circle.fill" size={16} color={theme.icon} />
+                                </TouchableOpacity>
+                            )}
+                        </View>
 
                         {/* Floating Filter Bar - Hidden when item is selected */}
                         {!selectedItem && isMapVisible && (
@@ -312,20 +355,34 @@ export function ExploreContent({ category, setCategory }: ExploreContentProps) {
                                     <View style={styles.mapCardContent}>
                                         <View style={styles.mapCardHeader}>
                                             <Text style={[styles.mapCardTitle, { color: theme.text }]} numberOfLines={1}>
-                                                {selectedItem.name}
+                                                {tData(selectedItem, 'name')}
                                             </Text>
                                         </View>
                                         <Text style={[styles.mapCardDesc, { color: theme.icon }]} numberOfLines={2}>
-                                            {selectedItem.shortDescription}
+                                            {tData(selectedItem, 'shortDescription')}
                                         </Text>
 
                                         <View style={styles.mapCardFooter}>
                                             <View style={[styles.miniChip, { backgroundColor: getCategoryColor(selectedItem.type) }]}>
                                                 <Text style={styles.miniChipText}>{i18n.t(selectedItem.type as any).toUpperCase()}</Text>
                                             </View>
-                                            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                                                <Text style={{ color: theme.primary, fontWeight: '600', fontSize: 13, marginRight: 2 }}>More</Text>
-                                                <IconSymbol name="chevron.right" size={16} color={theme.primary} />
+                                            <View style={{ flexDirection: 'row', gap: 12 }}>
+                                                {/* Directions Button */}
+                                                <TouchableOpacity
+                                                    style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: theme.cardBackground, padding: 6, borderRadius: 8, borderWidth: 1, borderColor: theme.border }}
+                                                    onPress={(e) => {
+                                                        e.stopPropagation();
+                                                        handleDirections(selectedItem);
+                                                    }}
+                                                >
+                                                    <IconSymbol name="location.fill" size={14} color={theme.text} />
+                                                    <Text style={{ color: theme.text, fontSize: 12, fontWeight: '600', marginLeft: 4 }}>{i18n.t('go')}</Text>
+                                                </TouchableOpacity>
+
+                                                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                                                    <Text style={{ color: theme.primary, fontWeight: '600', fontSize: 13, marginRight: 2 }}>{i18n.t('more')}</Text>
+                                                    <IconSymbol name="chevron.right" size={16} color={theme.primary} />
+                                                </View>
                                             </View>
                                         </View>
                                     </View>
@@ -544,5 +601,29 @@ const styles = StyleSheet.create({
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.2,
         shadowRadius: 4,
+    },
+    mapSearchPill: {
+        position: 'absolute',
+        top: 50,
+        left: 74, // 20 (left) + 44 (btn width) + 10 (gap)
+        right: 20,
+        height: 44,
+        borderRadius: 22,
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingHorizontal: 12,
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.15,
+        shadowRadius: 3,
+        elevation: 5,
+        borderWidth: 1,
+    },
+    mapSearchInput: {
+        flex: 1,
+        fontSize: 16,
+        marginLeft: 8,
+        height: '100%',
+        paddingVertical: 0,
     }
 });
