@@ -1,7 +1,7 @@
 const API_TOKEN = '4f4515f9-e0dd-4758-b372-a546d8729fbf';
 const BASE_URL = 'https://api.cts-strasbourg.eu/v1/siri/2.0';
 
-// Robust Base64 Polyfill
+
 const toBase64 = (input: string) => {
     const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=';
     let str = input;
@@ -24,10 +24,10 @@ const toBase64 = (input: string) => {
 };
 
 const getAuthHeader = () => {
-    // The credentials must be "TOKEN:" (with the trailing colon)
+    
     const credentials = `${API_TOKEN}:`;
 
-    // Prefer global btoa if available (standard in React Native), else use polyfill
+    
     let encoded = '';
     try {
         if (typeof btoa === 'function') {
@@ -81,17 +81,17 @@ export interface ParsedLine {
     RouteColor: string;
 }
 
-// --- "Structure-Split" Parsers ---
 
-// Robust helper to get value inside <TagName>...</TagName>
+
+
 const extractTag = (content: string, tagName: string) => {
-    // Matches <TagName ...>value</TagName> ignoring namespaces/attributes
+    
     const regex = new RegExp(`<[\\w:]*${tagName}[^>]*>([\\s\\S]*?)<\/[\\w:]*${tagName}>`);
     const match = content.match(regex);
     return match ? match[1].trim() : null;
 };
 
-// Case-insensitive property getter
+
 const getVal = (obj: any, key: string) => {
     if (!obj) return null;
     if (obj[key] !== undefined) return obj[key];
@@ -104,25 +104,25 @@ const getVal = (obj: any, key: string) => {
 const parseXMLStops = (xmlString: string) => {
     const stops: ParsedStop[] = [];
 
-    // SPLIT BY THE INNER STRUCTURE TAG
-    // This handles cases where multiple structures are wrapped in one Ref
+    
+    
     const rawItems = xmlString.split(/<[\w:]*AnnotatedStopPointStructure/);
 
     console.log(`[CTSService] Split XML into ${rawItems.length} chunks (Stops)`);
 
-    // Skip the first chunk (header garbage)
+    
     for (let i = 1; i < rawItems.length; i++) {
         const content = rawItems[i];
 
-        // Since we split by the opening tag, 'content' STARTS with the stop data
-        // We just need to extract fields from this block
+        
+        
 
         const ref = extractTag(content, 'StopPointRef');
         const name = extractTag(content, 'StopName');
         const lon = extractTag(content, 'Longitude');
         const lat = extractTag(content, 'Latitude');
 
-        // Extract LineRefs (find all occurrences in this chunk)
+        
         const lines: string[] = [];
         const lineRegex = /<[\w:]*LineRef[^>]*>(?:STRASBOURG:Line:)?(.*?)<\/[\w:]*LineRef>/g;
         let lineMatch;
@@ -146,7 +146,7 @@ const parseXMLStops = (xmlString: string) => {
 const parseXMLLines = (xmlString: string) => {
     const lines: ParsedLine[] = [];
 
-    // SPLIT BY THE INNER STRUCTURE TAG
+    
     const rawItems = xmlString.split(/<[\w:]*AnnotatedLineStructure/);
 
     console.log(`[CTSService] Split XML into ${rawItems.length} chunks (Lines)`);
@@ -183,7 +183,7 @@ class CTSService {
                 method: 'GET',
                 headers: {
                     'Authorization': getAuthHeader(),
-                    'Accept': 'application/json', // Force JSON for real-time endpoints
+                    'Accept': 'application/json', 
                 },
             });
 
@@ -193,13 +193,13 @@ class CTSService {
                 throw new Error(`CTS API Error: ${response.status} ${response.statusText}`);
             }
 
-            // Inspect Content-Type to decide how to parse? 
-            // The prompt says real-time often requires Accept: application/json and returns JSON.
-            // But we should be safe.
+            
+            
+            
             const contentType = response.headers.get('content-type');
             if (contentType && contentType.includes('xml')) {
                 console.warn("[CTSService] Unexpected XML content for JSON request");
-                // If it mistakenly returns XML, we might need to handle it, but for now expect JSON
+                
             }
 
             return await response.json();
@@ -209,9 +209,9 @@ class CTSService {
         }
     }
 
-    // Discovery endpoints MUST use XML as per API spec usually, or at least our parser is designed for XML.
-    // The prompt says "getStopPointsDiscovery... returning 0 items... parser is still failing".
-    // We kept the XML parser for discovery.
+    
+    
+    
     async getStopPointsDiscovery(): Promise<ParsedStop[]> {
         const url = `${BASE_URL}/stoppoints-discovery`;
         console.log(`[CTSService] Requesting XML from ${url}`);
@@ -221,13 +221,13 @@ class CTSService {
                 method: 'GET',
                 headers: {
                     'Authorization': getAuthHeader(),
-                    'Accept': 'application/xml', // Explicitly ask for XML for discovery
+                    'Accept': 'application/xml', 
                 },
             });
 
             const text = await response.text();
 
-            // EMERGENCY LOG as requested
+            
             console.log("Raw API Response Start:", text.slice(0, 500));
 
             if (!response.ok) {
@@ -246,11 +246,11 @@ class CTSService {
     }
 
     async getStopMonitoring(stopPointRef: string): Promise<VehicleJourney[]> {
-        // stop-monitoring usually works best with JSON
+        
         const data = await this.request('stop-monitoring', { MonitoringRef: stopPointRef });
 
-        // Use case-insensitive helpers
-        // Structure: ServiceDelivery -> StopMonitoringDelivery -> MonitoredStopVisit[]
+        
+        
         const delivery = getVal(getVal(data, 'ServiceDelivery'), 'StopMonitoringDelivery')?.[0];
         const visits = getVal(delivery, 'MonitoredStopVisit') || [];
 
@@ -293,7 +293,7 @@ class CTSService {
             });
 
             const text = await response.text();
-            // EMERGENCY LOG
+            
             console.log("Raw API Response Start (Lines):", text.slice(0, 500));
 
             if (!response.ok) {
@@ -315,7 +315,7 @@ class CTSService {
         return await this.request('park-and-ride');
     }
     async getVehiclePositions() {
-        // SWITCH TO VEHICLE MONITORING (Live GPS)
+        
         const url = `${BASE_URL}/vehicle-monitoring`;
         console.log(`[CTSService] Fetching Live GPS from ${url}`);
 
@@ -330,7 +330,7 @@ class CTSService {
             if (!response.ok) throw new Error(`HTTP Error ${response.status}`);
             const data = await response.json();
 
-            // Navigate SIRI VehicleMonitoring Structure
+            
             const delivery = data.ServiceDelivery?.VehicleMonitoringDelivery?.[0];
             const activities = delivery?.VehicleActivity || [];
 
@@ -344,10 +344,10 @@ class CTSService {
                 const lat = journey.VehicleLocation?.Latitude;
                 const lon = journey.VehicleLocation?.Longitude;
 
-                // 1. Check if it's a Tram (A-H)
+                
                 if (!['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'].includes(line)) return null;
 
-                // 2. Check if we have valid coordinates
+                
                 if (!lat || !lon) return null;
 
                 return {

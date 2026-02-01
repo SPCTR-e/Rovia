@@ -22,7 +22,7 @@ export default function ExploreScreen() {
   const { category } = useLocalSearchParams<{ category: string }>();
   const [search, setSearch] = useState('');
 
-  // Merge all data sources and ensure they have categories
+  
   const allItems = [
     ...SIGHTS.map(s => ({ ...s, category: 'sights' as const })),
     ...MUSEUMS.map(m => ({ ...m, category: 'museums' as const })),
@@ -58,14 +58,14 @@ export default function ExploreScreen() {
                   {category ? i18n.t(category as any) : i18n.t('exploreTitle')}
                 </Text>
 
-                {/* Category Cards */}
-                {/* Category Cards */}
+                {}
+                {}
                 <View style={styles.categoriesContainer}>
                   {CATEGORIES.map(cat => {
                     const isActive = category === cat.nameKey;
                     return (
                       <Pressable
-                        key={`${cat.id}-${isActive}`} // Force remount on state change
+                        key={`${cat.id}-${isActive}`} 
                         style={[
                           styles.categoryCard,
                           { backgroundColor: cat.color },
@@ -144,21 +144,21 @@ const styles = StyleSheet.create({
     marginBottom: 24,
     flexDirection: 'row',
     flexWrap: 'wrap',
-    justifyContent: 'space-between', // Ensures they stick to edges with space in middle
-    gap: 12, // Gap for vertical spacing (row gap)
+    justifyContent: 'space-between', 
+    gap: 12, 
   },
   categoryCard: {
-    width: '47%', // Slightly less than 48% to be safe with rounding
+    width: '47%', 
     height: 100,
     borderRadius: 16,
     overflow: 'hidden',
-    marginBottom: 12, // Explicit bottom margin for rows
-    // Background color is set dynamically per category
+    marginBottom: 12, 
+    
   },
   categoryCardActive: {
-    borderWidth: 3, // Thicker border for bigger cards
+    borderWidth: 3, 
     borderColor: '#2D2A26',
-    transform: [{ scale: 1.02 }], // Subtle scale
+    transform: [{ scale: 1.02 }], 
   },
   categoryContent: {
     flex: 1,
@@ -167,11 +167,11 @@ const styles = StyleSheet.create({
     padding: 12,
   },
   categoryText: {
-    fontWeight: '800', // Bolder text
+    fontWeight: '800', 
     fontSize: 16,
     textAlign: 'center',
     zIndex: 10,
-    textTransform: 'uppercase', // More stylistic
+    textTransform: 'uppercase', 
     letterSpacing: 1,
   },
 });

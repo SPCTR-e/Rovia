@@ -3,14 +3,7 @@ const fs = require('fs');
 const path = require('path');
 const { execSync } = require('child_process');
 
-/*
- * Script to download and process CTS GTFS Data
- * 
- * Since CTS GTFS lacks shapes.txt (surprising but confirmed), we reconstruct geometries
- * by chaining stop locations from stop_times.txt for each trip.
- * 
- * We target lines A, B, C, D, E, F (Trams) and G, H (BHNS).
- */
+
 
 const ZIP_URL = 'https://opendata.cts-strasbourg.eu/google_transit.zip';
 const TEMP_DIR = path.resolve(__dirname, '../temp_gtfs');
@@ -26,11 +19,11 @@ async function downloadFile(url, dest) {
 }
 
 function parseCSV(content) {
-    // Split by line
+    
     const lines = content.toString().split(/\r?\n/).filter(l => l.trim());
     if (lines.length === 0) return [];
 
-    // Parse header
+    
     const header = lines[0].split(',').map(h => h.trim().replace(/"/g, ''));
 
     // Parse rows
@@ -217,8 +210,8 @@ export interface TransportLine {
     name: string;
     trajectory: string;
     color: string;
-    path?: any[]; // Legacy support but unused if geoJson is present
-    geoJson?: any; // Feature<MultiLineString>
+    path?: any[]; 
+    geoJson?: any; 
 }
 
 export const TRANSPORT_LINES: TransportLine[] = ${JSON.stringify(TransportLines, null, 4)};

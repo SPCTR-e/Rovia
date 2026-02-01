@@ -27,7 +27,7 @@ async function checkStops() {
 
         console.log(`Total Stops: ${stops.length}`);
 
-        // Check if any stop has "Lines" property
+        
         const hasLines = stops.some(s => s.Lines);
         console.log(`Has Lines property: ${hasLines}`);
 

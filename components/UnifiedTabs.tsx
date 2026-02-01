@@ -22,7 +22,7 @@ import { IconSymbol } from './ui/icon-symbol';
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const TAB_COUNT = 4;
 
-// Memoize content components to prevent unnecessary re-renders
+
 const MemoizedHome = React.memo(HomeContent);
 const MemoizedExplore = React.memo(ExploreContent);
 const MemoizedTransport = React.memo(TransportContent);
@@ -36,22 +36,22 @@ export function UnifiedTabs() {
     const colorScheme = useColorScheme();
     const theme = Colors[colorScheme ?? 'light'];
 
-    // State
+    
     const [activeIndex, setActiveIndex] = useState(0);
     const [category, setCategory] = useState<string>('sights');
     const [transportLoaded, setTransportLoaded] = useState(false);
     const [pendingMapOpen, setPendingMapOpen] = useState(false);
     const [locale, setLocale] = useState(i18n.locale);
 
-    // Ref for stable callbacks
+    
     const activeIndexRef = React.useRef(0);
     const transportRef = React.useRef<TransportRef>(null);
 
-    // 0 = Home, 1 = Explore, 2 = Transport
+    
     const translateX = useSharedValue(0);
     const contextX = useSharedValue(0);
 
-    // Stable navigation callbacks
+    
     const updateActiveTab = React.useCallback((index: number) => {
         if (index !== activeIndexRef.current) {
             setActiveIndex(index);
@@ -63,7 +63,7 @@ export function UnifiedTabs() {
     }, []);
 
     const switchTab = React.useCallback((index: number) => {
-        // Always animate to ensure snap-back if we were overscrolling
+        
         translateX.value = withSpring(-index * SCREEN_WIDTH, {
             damping: 25,
             stiffness: 150,
@@ -103,7 +103,7 @@ export function UnifiedTabs() {
         setLocale(newLocale);
     };
 
-    // Handle map opening loop
+    
     useEffect(() => {
         if (pendingMapOpen && transportLoaded && activeIndex === 2) {
             setTimeout(() => {
@@ -113,20 +113,20 @@ export function UnifiedTabs() {
         }
     }, [pendingMapOpen, transportLoaded, activeIndex]);
 
-    // Update activeIndex ONLY when arriving via deep link or back/forward
-    // Not during active swipe/click which already updated the state
-    // Update activeIndex ONLY when arriving via deep link or back/forward
-    // Not during active swipe/click which already updated the state
+    
+    
+    
+    
     useEffect(() => {
         const index = pathname === '/' ? 0 : pathname === '/explore' ? 1 : pathname === '/transport' ? 2 : 0;
         if (index !== activeIndex && pathname !== '/') {
-            // ... (keep existing logic if any, currently empty)
+            
         }
-        // Ensure ref is in sync on mount/update
+        
         activeIndexRef.current = activeIndex;
     }, [activeIndex, pathname]);
 
-    // Sync category with params for deep links
+    
     useEffect(() => {
         if (params.category && params.category !== category) {
             setCategory(params.category);
@@ -134,20 +134,20 @@ export function UnifiedTabs() {
     }, [params.category]);
 
     const pan = Gesture.Pan()
-        .activeOffsetX([-20, 20]) // Only activate if horizontal swipe is explicit
-        .failOffsetY([-5, 5])     // Fail IMMEDIATELY if vertical movement is detected to allow scrolling
+        .activeOffsetX([-20, 20]) 
+        .failOffsetY([-5, 5])     
         .onStart(() => {
             contextX.value = translateX.value;
         })
         .onUpdate((event) => {
             const newTranslate = contextX.value + event.translationX;
 
-            // Limit over-swiping on the edges
+            
             if (newTranslate > 0) {
-                // Resistance when pulling further than the first tab (TranslateX > 0)
+                
                 translateX.value = Math.pow(newTranslate, 0.7);
             } else if (newTranslate < -(TAB_COUNT - 1) * SCREEN_WIDTH) {
-                // Resistance when pulling further than the last tab
+                
                 const overscroll = newTranslate + (TAB_COUNT - 1) * SCREEN_WIDTH;
                 translateX.value = -(TAB_COUNT - 1) * SCREEN_WIDTH - Math.pow(Math.abs(overscroll), 0.7);
             } else {
@@ -172,7 +172,7 @@ export function UnifiedTabs() {
 
             const clampedIndex = Math.max(0, Math.min(TAB_COUNT - 1, targetIndex));
 
-            // Always animate to the correct tab position
+            
             translateX.value = withSpring(-clampedIndex * SCREEN_WIDTH, {
                 damping: 25,
                 stiffness: 150,
@@ -187,7 +187,7 @@ export function UnifiedTabs() {
         transform: [{ translateX: translateX.value }],
     }));
 
-    // --- Render Tab Item Helper ---
+    
     const renderTabItem = (index: number, iconName: any, label: string) => {
         const isActive = activeIndex === index;
         return (
@@ -213,7 +213,7 @@ export function UnifiedTabs() {
 
     const categoriesAnimatedStyle = useAnimatedStyle(() => {
         const isExplore = Math.abs(translateX.value + SCREEN_WIDTH) < SCREEN_WIDTH * 0.5;
-        // Slide up slightly less (lowered position)
+        
         const translateYValue = isExplore ? -36 : 0;
 
         return {
@@ -233,20 +233,20 @@ export function UnifiedTabs() {
                             <MemoizedHome key={`home-${locale}`} onNavigate={navigateTo} onLanguageChange={handleLanguageChange} />
                         </View>
                         <View style={{ width: SCREEN_WIDTH }}>
-                            {/* Explore is the middle tab, keep it mounted for smooth swiping */}
+                            {}
                             <MemoizedExplore key={`explore-${locale}`} category={category} setCategory={setCategory} />
                         </View>
                         <View style={{ width: SCREEN_WIDTH }}>
                             <MemoizedItinerary key={`itinerary-${locale}`} onNavigate={navigateTo} />
                         </View>
                         <View style={{ width: SCREEN_WIDTH }}>
-                            {/* Only lazy load Transport (Map) as it's the heaviest component, then keep alive */}
+                            {}
                             {activeIndex === 3 || transportLoaded ? <MemoizedTransport key={`transport-${locale}`} ref={transportRef} /> : <View style={{ flex: 1 }} />}
                         </View>
                     </Animated.View>
                 </GestureDetector>
 
-                {/* Animated Categories Overlay (Behind Tab Bar) */}
+                {}
                 <Animated.View
                     pointerEvents={activeIndex === 1 ? 'auto' : 'none'}
                     style={[
@@ -271,7 +271,7 @@ export function UnifiedTabs() {
                     </ScrollView>
                 </Animated.View>
 
-                {/* Custom Bottom Tab Bar */}
+                {}
                 <View style={[styles.tabBar, {
                     backgroundColor: theme.cardBackground,
                     borderTopColor: theme.border,
@@ -284,7 +284,7 @@ export function UnifiedTabs() {
                             shadowRadius: 4,
                         },
                         android: {
-                            elevation: 12, // Increased elevation
+                            elevation: 12, 
                         }
                     })
                 }]}>
@@ -318,11 +318,11 @@ const styles = StyleSheet.create({
         right: 10,
         flexDirection: 'row',
         height: 60,
-        borderRadius: 30, // Pill shape
+        borderRadius: 30, 
         alignItems: 'center',
         justifyContent: 'space-around',
-        borderTopWidth: 0, // Remove top border for floating look
-        // Shadow will be applied inline based on platform
+        borderTopWidth: 0, 
+        
     },
     tabItem: {
         alignItems: 'center',
@@ -340,25 +340,25 @@ const styles = StyleSheet.create({
         bottom: 15,
         left: 10,
         right: 10,
-        height: 75, // Wider on Y scale (taller)
+        height: 75, 
         zIndex: 5,
-        borderTopLeftRadius: 25, // Slightly more rounded for taller look
+        borderTopLeftRadius: 25, 
         borderTopRightRadius: 25,
         borderWidth: 0,
         paddingTop: 8,
     },
     categoriesScroll: {
-        paddingHorizontal: 20, // Increased from 20 for wider corner spacing
+        paddingHorizontal: 20, 
         alignItems: 'flex-start',
-        gap: 24, // Slightly more gap for the taller drawer
+        gap: 24, 
     },
     categoryPill: {
         paddingVertical: 8,
-        // Removed backgrounds and borders for text-only look
+        
     },
     categoryPillText: {
         fontSize: 14,
-        fontWeight: '800', // Bolder for textual prominence
+        fontWeight: '800', 
         textTransform: 'uppercase',
         letterSpacing: 0.5,
     }

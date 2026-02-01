@@ -3,7 +3,7 @@ export type Sight = {
     name: string;
     shortDescription: string;
     description?: string;
-    image: any; // URL or require
+    image: any; 
     category: 'sights' | 'nature' | 'modern' | 'mustSee' | 'museums' | 'restaurants' | 'activities' | 'sights';
     location: string;
     coordinates?: {
@@ -24,7 +24,7 @@ export type Sight = {
 };
 
 export const SIGHTS: Sight[] = [
-    // Primary Sights
+    
     {
         id: 'cathedral',
         name: 'Cathédrale Notre-Dame',
@@ -32,7 +32,7 @@ export const SIGHTS: Sight[] = [
         description: 'Strasbourg Cathedral is widely considered a masterpiece of Gothic architecture, famous for its intricate pink sandstone facade and astronomical clock. Its 142-meter spire was the world\'s tallest building for over two centuries, dominating the Alsatian plain. Visitors can climb to the platform for a breathtaking view of the city and the Vosges mountains.',
         image: require('@/assets/images/sights/cathedral.jpg'),
         category: 'sights',
-        // Updated
+        
         location: 'Pl. de la Cathédrale',
         coordinates: { latitude: 48.58180755516249, longitude: 7.750911815075193 },
         translations: {
@@ -87,7 +87,7 @@ export const SIGHTS: Sight[] = [
         description: 'This picturesque historic quarter was once home to the city\'s tanners, millers, and fishermen. The neighborhood is defined by its charming half-timbered houses dating from the 16th and 17th centuries, leaning over the canals. It is a pedestrian-friendly area best explored on foot, offering intimate views of the Ill River and its locks.',
         image: require('@/assets/images/sights/petite-france.jpg'),
         category: 'sights',
-        // Updated
+        
         location: '1 Rue du Pont Saint-Martin',
         coordinates: { latitude: 48.58009767451487, longitude: 7.743200116368558 },
         translations: {
@@ -142,7 +142,7 @@ export const SIGHTS: Sight[] = [
         description: 'Built in the 18th century for the Prince-Bishops of Strasbourg, this palace is a splendid example of French Baroque architecture. Modeled after Parisian mansions, it features opulent royal apartments and a magnificent riverfront terrace. Today, it houses three major museums: the Museum of Fine Arts, the Archaeological Museum, and the Museum of Decorative Arts.',
         image: require('@/assets/images/sights/palais-rohan.jpg'),
         category: 'sights',
-        // Updated
+        
         location: '2 Pl. du Château',
         coordinates: { latitude: 48.581059628550705, longitude: 7.752234701598285 },
         translations: {
@@ -197,7 +197,7 @@ export const SIGHTS: Sight[] = [
         description: 'Constructed in the late 17th century by the military engineer Vauban, this covered bridge and weir was designed to flood the city\'s southern approaches in case of attack. The structure spans the River Ill and features a rooftop terrace open to the public. From the top, visitors can enjoy one of the best panoramic views of the Petite France district and the cathedral\'s spire.',
         image: require('@/assets/images/sights/barrage-vauban.jpg'),
         category: 'sights',
-        // Updated
+        
         location: 'Pl. du Quartier Blanc',
         coordinates: { latitude: 48.579601192743404, longitude: 7.738016252519863 },
         translations: {
@@ -245,7 +245,7 @@ export const SIGHTS: Sight[] = [
             }
         }
     },
-    // Secondary Sights
+    
     {
         id: 'eu-parliament',
         name: 'European Parliament',
@@ -253,7 +253,7 @@ export const SIGHTS: Sight[] = [
         description: 'The Louise Weiss building is the impressive seat of the European Parliament, featuring a vast hemicycle for plenary sessions. Its distinctive glass and metal architecture symbolizes transparency and the unfinished nature of the European project. Visitors can tour the building to witness the heart of European democracy and admire its contemporary design.',
         image: require('@/assets/images/sights/eu-parliament.jpg'),
         category: 'sights',
-        // Updated
+        
         location: '1 Av. du Président Robert Schuman',
         coordinates: { latitude: 48.597484505938425, longitude: 7.768460744781987 },
         translations: {
@@ -308,7 +308,7 @@ export const SIGHTS: Sight[] = [
         description: 'This is Strasbourg\'s oldest and most beloved park, a favorite retreat for locals located right next to the European institutions. It features a boating lake, a small zoo, and a famous sanctuary for storks, the symbol of Alsace. The park also boasts the Pavillon Joséphine, built for Napoleon\'s wife, and extensive walking paths lined with centuries-old trees.',
         image: require('@/assets/images/sights/orangerie.jpg'),
         category: 'sights',
-        // Updated
+        
         location: 'Parc de l\'Orangerie',
         coordinates: { latitude: 48.59242512751338, longitude: 7.774717627413548 },
         translations: {
@@ -363,7 +363,7 @@ export const SIGHTS: Sight[] = [
         description: 'Spanning both banks of the Rhine, this unique cross-border park symbolizes the friendship between France and Germany. A magnificent pedestrian and cyclist bridge connects the Strasbourg side with the German town of Kehl. It offers expansive green spaces for recreation and hosts cultural events that celebrate the unity of the two nations.',
         image: require('@/assets/images/sights/deux-rives.jpg'),
         category: 'sights',
-        // Updated
+        
         location: '1 Rue des Cavaliers',
         coordinates: { latitude: 48.568389795860774, longitude: 7.79880482370121 },
         translations: {
@@ -418,7 +418,7 @@ export const SIGHTS: Sight[] = [
         description: 'Situated on the Place de la République, the former "Kaiserpalast" is a monumental example of late 19th-century German imperial architecture. Built for the German Emperor, its massive dome and Renaissance-inspired facade dominate the Neustadt district. While not always open to the public, its imposing exterior and historical significance make it a key landmark of the city\'s dual heritage.',
         image: require('@/assets/images/sights/palais-rhin.jpg'),
         category: 'sights',
-        // Updated
+        
         location: '2 Pl. de la République',
         coordinates: { latitude: 48.58760234137872, longitude: 7.7527729604229005 },
         translations: {
@@ -473,7 +473,7 @@ export const SIGHTS: Sight[] = [
         description: 'Commanding the southern tip of Sainte-Hélène Island, the Reformed Church of St. Paul is a masterpiece of Neo-Gothic architecture. Its twin spires rise elegantly above the river, creating stunning reflections in the Ill and the Aar. Built during the German annexation for the garrison troops, it remains one of the most photographed and picturesque sites in Strasbourg.',
         image: require('@/assets/images/sights/st-paul.jpg'),
         category: 'sights',
-        // Updated
+        
         location: '1 Pl. du Général Eisenhower',
         coordinates: { latitude: 48.58618301091684, longitude: 7.7597309527141425 },
         translations: {
@@ -528,7 +528,7 @@ export const SIGHTS: Sight[] = [
         description: 'The Palais Universitaire is a grand edifice designed in the Italian Renaissance style and completed in 1884. It served as the center of the new imperial university, reflecting the heavy investment in education during the German period. The building features a majestic aula and stands as the focal point of the expansive university campus in the Neustadt.',
         image: require('@/assets/images/sights/university.jpg'),
         category: 'sights',
-        // Updated
+        
         location: '9 Pl. de l\'Université',
         coordinates: { latitude: 48.58481135926765, longitude: 7.762476855622575 },
         translations: {
@@ -581,7 +581,7 @@ export const SIGHTS: Sight[] = [
         name: "Archives of the City and Eurometropolis",
         shortDescription: "Preserving the history of Strasbourg and its region from the Middle Ages to today.",
         description: "The City and Eurometropolis Archives of Strasbourg are dedicated to collecting and showcasing documents produced by the administration as well as private archives. The collections cover the city's history since the Middle Ages and are accessible to everyone in the reading room, a civic right inherited from the Revolution. The site also offers exhibitions, cultural activities, and numerous digital resources.",
-        image: require('@/assets/images/sights/cathedral.jpg'), // Placeholder
+        image: require('@/assets/images/sights/cathedral.jpg'), 
         category: 'sights',
         location: "32 Avenue du Rhin",
         coordinates: { latitude: 48.5724289717129, longitude: 7.7632171518673 },
@@ -635,7 +635,7 @@ export const SIGHTS: Sight[] = [
         name: "National and University Library (BNU)",
         shortDescription: "A major library for humanities and Germanic culture in a Neo-Renaissance building.",
         description: "Founded in 1871, the BNU occupies an iconic Neo-Renaissance building in the Neustadt, recently renovated to meet modern standards. It holds over 3.7 million volumes and is a European reference for Germanic languages and civilizations as well as religious sciences. Besides its vast collections, it offers exhibitions, a museum space, and various cultural services open to all.",
-        image: require('@/assets/images/sights/cathedral.jpg'), // Placeholder
+        image: require('@/assets/images/sights/cathedral.jpg'), 
         category: 'sights',
         location: "6 Place de la République",
         coordinates: { latitude: 48.587253641730534, longitude: 7.755465382697849 },
@@ -689,7 +689,7 @@ export const SIGHTS: Sight[] = [
         name: "Alsatian Theatre of Strasbourg",
         shortDescription: "A lively and popular theatre celebrating the Alsatian dialect through various plays.",
         description: "Founded in 1904, the Alsatian Theatre of Strasbourg highlights the richness of the regional dialect thanks to a troupe of enthusiasts. Its varied programming includes comedies, dramas, and Christmas tales, cultivating humor and open-mindedness. It is hosted within the Opéra National du Rhin.",
-        image: require('@/assets/images/sights/cathedral.jpg'), // Placeholder
+        image: require('@/assets/images/sights/cathedral.jpg'), 
         category: 'sights',
         location: "19 Place Broglie",
         coordinates: { latitude: 48.5857458417163, longitude: 7.75194904991187 },
@@ -743,7 +743,7 @@ export const SIGHTS: Sight[] = [
         name: "Le Vaisseau",
         shortDescription: "A playful science center where children explore science interactively.",
         description: "Le Vaisseau is a science center designed for young people aged 2 to 15, fostering a playful discovery of science and technology. It offers numerous interactive activities for families and serves as an educational resource for teachers.",
-        image: require('@/assets/images/sights/cathedral.jpg'), // Placeholder
+        image: require('@/assets/images/sights/cathedral.jpg'), 
         category: 'sights',
         location: "1 bis Rue Philippe Dollinger",
         coordinates: { latitude: 48.5727180931458, longitude: 7.77172976454007 },
@@ -797,7 +797,7 @@ export const SIGHTS: Sight[] = [
         name: "Zénith of Strasbourg",
         shortDescription: "The largest Zénith-type concert hall in France, hosting international stars and major events.",
         description: "Inaugurated in 2008, the Zénith of Strasbourg is the largest venue of its kind in France, with a capacity of 12,000 spectators. Designed by architect Massimiliano Fuksas as an 'Aladdin's lamp' with its translucent orange membrane, it hosts international concerts and major sporting events. Its sustainable and modular structure makes it a major cultural venue in the Grand Est.",
-        image: require('@/assets/images/sights/cathedral.jpg'), // Placeholder
+        image: require('@/assets/images/sights/cathedral.jpg'), 
         category: 'sights',
         location: "1 Allée du Zénith",
         coordinates: { latitude: 48.592529, longitude: 7.687376 },
@@ -851,7 +851,7 @@ export const SIGHTS: Sight[] = [
         name: "Exhibition Center",
         shortDescription: "A modern events complex designed by Kengo Kuma, ideal for trade fairs and congresses.",
         description: "Opened in 2022 and designed by architect Kengo Kuma, the new Exhibition Center offers 24,000 m² of modern spaces. Its four spacious and interconnected halls allow for great modularity for all types of events, from trade fairs to gala evenings.",
-        image: require('@/assets/images/sights/cathedral.jpg'), // Placeholder
+        image: require('@/assets/images/sights/cathedral.jpg'), 
         category: 'sights',
         location: "Avenue Herrenschmidt",
         coordinates: { latitude: 48.596361, longitude: 7.754608 },
@@ -905,7 +905,7 @@ export const SIGHTS: Sight[] = [
         name: "Strasbourg Philharmonic Orchestra",
         shortDescription: "A nationally and internationally renowned orchestra, founded in 1855, with a rich symphonic and lyrical season.",
         description: "Founded in 1855, the Strasbourg Philharmonic Orchestra is one of the oldest and most prestigious orchestras in France, labeled a National Orchestra in 1994. It performs over 30 concerts a year, participates in the Opéra national du Rhin season, and shines internationally through its tours and award-winning recordings. It regularly hosts world-renowned conductors and soloists.",
-        image: require('@/assets/images/sights/cathedral.jpg'), // Placeholder
+        image: require('@/assets/images/sights/cathedral.jpg'), 
         category: 'sights',
         location: "Place de Bordeaux",
         coordinates: { latitude: 48.5979092919141, longitude: 7.75702064808858 },
@@ -959,7 +959,7 @@ export const SIGHTS: Sight[] = [
         name: "André Malraux Media Library",
         shortDescription: "An iconic media library housed in a rehabilitated former port warehouse.",
         description: "Located on the Seegmuller mole, this media library occupies a boldy rehabilitated former 1930s industrial building. It houses an exceptional heritage collection, a center dedicated to illustration, and collections focused on European literatures. It is a lively cultural venue at the heart of the new Deux Rives district.",
-        image: require('@/assets/images/sights/cathedral.jpg'), // Placeholder
+        image: require('@/assets/images/sights/cathedral.jpg'), 
         category: 'sights',
         location: "1 Presqu'île André Malraux",
         coordinates: { latitude: 48.5743644803286, longitude: 7.76031988603803 },
@@ -1013,7 +1013,7 @@ export const SIGHTS: Sight[] = [
         name: "Print and Drawing Room",
         shortDescription: "A rich collection of graphic art from the 15th to the 20th century located in the Palais Rohan.",
         description: "Housed in a wing of the Palais Rohan, the Print and Drawing Room preserves over 200,000 graphic works. Its collections cover the period from the 15th to the 20th century and include masterpieces by Dürer, Baldung Grien, and Gustave Doré. It regularly offers exhibitions highlighting the richness of its holdings.",
-        image: require('@/assets/images/sights/cathedral.jpg'), // Placeholder
+        image: require('@/assets/images/sights/cathedral.jpg'), 
         category: 'sights',
         location: "5 Place du Château",
         coordinates: { latitude: 48.5810929189577, longitude: 7.75083279997787 },
@@ -1067,7 +1067,7 @@ export const SIGHTS: Sight[] = [
         name: "L'Aubette 1928",
         shortDescription: "A masterpiece of the artistic avant-garde integrating man into painting.",
         description: "L'Aubette 1928 is a leisure complex decorated by Theo van Doesburg, Jean Arp, and Sophie Taeuber-Arp, listed as a Historical Monument. A true manifesto of the De Stijl movement nicknamed the 'Sistine Chapel of abstract art', it aims to place the visitor at the heart of the painting.",
-        image: require('@/assets/images/sights/cathedral.jpg'), // Placeholder
+        image: require('@/assets/images/sights/cathedral.jpg'), 
         category: 'sights',
         location: "Place Kléber",
         coordinates: { latitude: 48.5838647689204, longitude: 7.74580678790479 },
@@ -1121,7 +1121,7 @@ export const SIGHTS: Sight[] = [
         name: "Observatory",
         shortDescription: "A historic 19th-century observatory featuring a large dome and a planetarium.",
         description: "Built in 1881 in the Botanical Garden, the Strasbourg Observatory is topped by an impressive 34-ton dome housing a large refracting telescope. Its architecture bears witness to the Reichsland period with its allegorical pediments. The site also includes a planetarium and a collection of antique instruments, managed by the University of Strasbourg.",
-        image: require('@/assets/images/sights/cathedral.jpg'), // Placeholder
+        image: require('@/assets/images/sights/cathedral.jpg'), 
         category: 'sights',
         location: "11 Rue de l'Université",
         coordinates: { latitude: 48.5824516361666, longitude: 7.76766676306167 },
@@ -1175,7 +1175,7 @@ export const SIGHTS: Sight[] = [
         name: "Departmental Hotel",
         shortDescription: "A modern, ship-shaped building, seat of the Departmental Council on the banks of the Ill.",
         description: "Completed in 1989, this imposing building designed by Claude Vasconi evokes a ship moored along the Ill, opposite the Vauban Dam. Seat of the Departmental Council (now European Collectivity of Alsace), its blend of stone and metal marks the entrance to the historic center.",
-        image: require('@/assets/images/sights/cathedral.jpg'), // Placeholder
+        image: require('@/assets/images/sights/cathedral.jpg'), 
         category: 'sights',
         location: "Place du Quartier Blanc",
         coordinates: { latitude: 48.5785986852625, longitude: 7.7381028268543 },
@@ -1229,7 +1229,7 @@ export const SIGHTS: Sight[] = [
         name: "Courthouse",
         shortDescription: "A majestic 19th-century Neo-Greek palace, symbolizing the independence of justice.",
         description: "Built at the end of the 19th century by Skjold Neckelmann, the Courthouse is distinguished by its Neo-Greek facade adorned with a portico and sphinxes. Its interior spaces, including an impressive Salle des Pas Perdus under a glass roof, are listed historical monuments. Recently renovated, it combines architectural heritage and modern functionality.",
-        image: require('@/assets/images/sights/cathedral.jpg'), // Placeholder
+        image: require('@/assets/images/sights/cathedral.jpg'), 
         category: 'sights',
         location: "1 Quai Finkmatt",
         coordinates: { latitude: 48.5871379101465, longitude: 7.74677298185002 },
@@ -1283,7 +1283,7 @@ export const SIGHTS: Sight[] = [
         name: "Tobacco Manufactory",
         shortDescription: "A former 19th-century factory converted into a dynamic hub of life, culture, and innovation.",
         description: "A witness to 19th-century industrial architecture, this former factory has been rehabilitated into a dynamic living space in the heart of Krutenau. It now hosts start-ups, the Rhine High School of Arts, a youth hostel, and conviviality spaces, all around a courtyard open to the district.",
-        image: require('@/assets/images/sights/cathedral.jpg'), // Placeholder
+        image: require('@/assets/images/sights/cathedral.jpg'), 
         category: 'sights',
         location: "7 Rue de la Krutenau",
         coordinates: { latitude: 48.5812435590203, longitude: 7.75730345193515 },
@@ -1337,7 +1337,7 @@ export const SIGHTS: Sight[] = [
         name: "Palace of Europe",
         shortDescription: "The historic seat of the Council of Europe, a symbol of European unity and cooperation.",
         description: "Inaugurated in 1977, the Palace of Europe is the main seat of the Council of Europe, designed to embody the strength of the union. Its massive exterior architecture contrasts with a curved interior. The forecourt houses symbolic works such as the Auschwitz Memorial and a sculpture dedicated to Human Rights.",
-        image: require('@/assets/images/sights/cathedral.jpg'), // Placeholder
+        image: require('@/assets/images/sights/cathedral.jpg'), 
         category: 'sights',
         location: "Avenue de l'Europe",
         coordinates: { latitude: 48.5947321452897, longitude: 7.77178965450865 },
@@ -1391,7 +1391,7 @@ export const SIGHTS: Sight[] = [
         name: "City Hall (Hôtel de Ville)",
         shortDescription: "An elegant 18th-century building, former counts' residence turned into the heart of municipal representation.",
         description: "This elegant Regency-style building, built in the 18th century for the Counts of Hanau-Lichtenberg, became the City Hall in 1806. Its austere facade on the square side contrasts with the inner courtyard decorated with mythological trophies. The interior salons have preserved their rich period decorations, testifying to the splendor of the noble residences of yesteryear.",
-        image: require('@/assets/images/sights/cathedral.jpg'), // Placeholder
+        image: require('@/assets/images/sights/cathedral.jpg'), 
         category: 'sights',
         location: "9 Rue Brulée",
         coordinates: { latitude: 48.5847391762622, longitude: 7.75056246923311 },
@@ -1445,7 +1445,7 @@ export const SIGHTS: Sight[] = [
         name: "Rhine National Opera",
         shortDescription: "A prestigious lyrical institution located in a historic neoclassical theater.",
         description: "The Rhine National Opera is a major institution uniting the artistic forces of Strasbourg, Mulhouse, and Colmar. Its Strasbourg headquarters occupies a 19th-century neoclassical theater, recognizable by its columned portico and rounded rear facade. It offers a rich season of operas, ballets, and recitals.",
-        image: require('@/assets/images/sights/cathedral.jpg'), // Placeholder
+        image: require('@/assets/images/sights/cathedral.jpg'), 
         category: 'sights',
         location: "19 Place Broglie",
         coordinates: { latitude: 48.5857458417163, longitude: 7.75194904991187 },
@@ -1499,7 +1499,7 @@ export const SIGHTS: Sight[] = [
         name: "Church of Saint William",
         shortDescription: "A picturesque church on the waterfront, remarkable for its asymmetrical architecture and interior treasures.",
         description: "Located on the banks of the Ill, this Gothic church strikes with its asymmetrical appearance due to its later added bell tower. It houses a Silbermann organ, a rich decor blending Gothic and Baroque, as well as magnificent 14th-century tombs. Its exceptional acoustics make it a popular venue for concerts.",
-        image: require('@/assets/images/sights/cathedral.jpg'), // Placeholder
+        image: require('@/assets/images/sights/cathedral.jpg'), 
         category: 'sights',
         location: "1 Rue Munch",
         coordinates: { latitude: 48.58208913036921, longitude: 7.757266051561016 },
@@ -1553,7 +1553,7 @@ export const SIGHTS: Sight[] = [
         name: "National Theatre of Strasbourg",
         shortDescription: "The only national theater in the regions, housed in the former Palace of the Diet.",
         description: "The only French national theater located outside Paris, the TNS is housed in the former Palace of the Diet of Alsace-Lorraine, a Neo-Renaissance building. It houses a permanent troupe and a higher school of dramatic art, offering an ambitious and European program. The site has several modern performance halls.",
-        image: require('@/assets/images/sights/cathedral.jpg'), // Placeholder
+        image: require('@/assets/images/sights/cathedral.jpg'), 
         category: 'sights',
         location: "1 Avenue de la Marseillaise",
         coordinates: { latitude: 48.5860847253208, longitude: 7.75542392122826 },
@@ -1607,7 +1607,7 @@ export const SIGHTS: Sight[] = [
         name: "Church of Saint-Pierre-le-Vieux (Catholic)",
         shortDescription: "A unique double church in Strasbourg, housing precious works of sacred art.",
         description: "A Strasbourgeois peculiarity, this church is composed of two interlocked buildings, one medieval and the other from the 19th century. It preserves a rare Alsatian rood screen, a Silbermann organ, and important carved and painted panels from the late Middle Ages, including works influenced by Martin Schongauer.",
-        image: require('@/assets/images/sights/cathedral.jpg'), // Placeholder
+        image: require('@/assets/images/sights/cathedral.jpg'), 
         category: 'sights',
         location: "Place Saint-Pierre-le-Vieux",
         coordinates: { latitude: 48.5830074301819, longitude: 7.73999310418156 },

@@ -11,7 +11,7 @@ function parseCSV(content) {
     const lines = content.toString().split(/\r?\n/).filter(l => l.trim());
     if (lines.length === 0) return [];
 
-    // Parse header
+    
     const header = lines[0].split(',').map(h => h.trim().replace(/"/g, ''));
 
     return lines.slice(1).map(line => {
@@ -75,7 +75,7 @@ async function main() {
     // This is expensive to scan stop_times (~million rows).
     // Let's try to optimize.
 
-    // 1. Identify Interesting Route IDs
+    
     const interestingRouteIds = new Set();
     const routeIdToShortName = {};
     routes.forEach(r => {
@@ -87,7 +87,7 @@ async function main() {
 
     console.log(`Found ${interestingRouteIds.size} interesting routes.`);
 
-    // 2. Identify Trips for these routes
+    
     const interestingTripIds = new Set();
     const tripIdToRouteId = {};
     trips.forEach(t => {
@@ -99,12 +99,12 @@ async function main() {
 
     console.log(`Found ${interestingTripIds.size} interesting trips.`);
 
-    // 3. Scan stop_times to find stops used by these trips
+    
     console.log('Scanning stop_times...');
     const stopTimesContent = fs.readFileSync(path.join(TEMP_DIR, 'stop_times.txt'));
     const stopTimesLines = stopTimesContent.toString().split(/\r?\n/);
 
-    // Header check
+    
     const header = stopTimesLines[0].split(',').map(h => h.trim().replace(/"/g, ''));
     const tripIdx = header.indexOf('trip_id');
     const stopIdx = header.indexOf('stop_id');
@@ -134,18 +134,18 @@ async function main() {
     const processedStopNames = new Set(); // Dedup by name/location roughly?
     // GTFS often has per-platform stops (Stop A, Stop B).
     // We want to group them into a single "Station" on the map if possible, 
-    // OR just show all and let zoom handle it. 
-    // If they share exactly same name, maybe grouping is better?
-    // Actually, distinct pins for platforms are fine at high zoom, but messy at low zoom.
-    // Let's group by Name for simplified view?
-    // Grouping by Name + roughly same location.
+    
+    
+    
+    
+    
 
-    const stations = {}; // Name -> { latSum, lonSum, count, lines: Set }
+    const stations = {}; 
 
-    // Manual adjustments for specific stations (Name matching)
-    // [lon_offset, lat_offset]
+    
+    
     const MANUAL_OFFSETS = {
-        'Etoile Bourse': [-0.000065, 0] // Move left slightly
+        'Etoile Bourse': [-0.000065, 0] 
     };
 
     stops.forEach(s => {
@@ -180,7 +180,7 @@ async function main() {
 
         stopFeatures.push({
             type: 'Feature',
-            id: name, // Feature ID
+            id: name, 
             properties: {
                 name: name,
                 lines: lines,

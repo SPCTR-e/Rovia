@@ -29,25 +29,13 @@ import { SIGHTS } from '@/data/sights';
 
 import { IconSymbol } from '../ui/icon-symbol';
 
-/* -------------------------------------------------------------------------- */
-/*  CONSTANTS                                                                 */
-/* -------------------------------------------------------------------------- */
-
-const ROW_HEIGHT = 104; // must match visual height (card + margin)
-const LIST_MARGIN = 5; // buffer for top item animation overshoot
-
-/* -------------------------------------------------------------------------- */
-/*  DATA LOOKUP                                                               */
-/* -------------------------------------------------------------------------- */
+const ROW_HEIGHT = 104;
+const LIST_MARGIN = 5;
 
 const ALL_ITEMS_MAP = new Map<string, any>();
 [...SIGHTS, ...MUSEUMS, ...RESTAURANTS, ...ACTIVITIES].forEach(item => {
     ALL_ITEMS_MAP.set(item.id, item);
 });
-
-/* -------------------------------------------------------------------------- */
-/*  DRAGGABLE ROW                                                             */
-/* -------------------------------------------------------------------------- */
 
 function DraggableRow({
     id,
@@ -112,7 +100,7 @@ function DraggableRow({
             const oldIndex = positions.value[id];
 
             if (clamped !== oldIndex) {
-                // UI Thread Reorder Logic
+
                 const currentOrder = [...sharedData.value];
                 const item = currentOrder.splice(oldIndex, 1)[0];
                 currentOrder.splice(clamped, 0, item);
@@ -219,10 +207,6 @@ function DraggableRow({
     );
 }
 
-/* -------------------------------------------------------------------------- */
-/*  MAIN                                                                      */
-/* -------------------------------------------------------------------------- */
-
 export function ItineraryContent() {
     const router = useRouter();
     const theme = Colors[useColorScheme() ?? 'light'];
@@ -230,7 +214,7 @@ export function ItineraryContent() {
 
     const [data, setData] = useState<string[]>(favorites);
 
-    // Sync local data with global favorites
+
     useEffect(() => {
         setData(favorites);
     }, [favorites]);
@@ -238,8 +222,6 @@ export function ItineraryContent() {
     const positions = useSharedValue(
         Object.fromEntries(favorites.map((id, i) => [id, i]))
     );
-
-
 
     const sharedData = useSharedValue(data);
 
@@ -281,7 +263,7 @@ export function ItineraryContent() {
             <Animated.ScrollView
                 contentContainerStyle={{
                     height: data.length * ROW_HEIGHT + LIST_MARGIN,
-                    paddingBottom: 100 // ensure footer space
+                    paddingBottom: 100
                 }}
                 showsVerticalScrollIndicator={false}
             >
@@ -305,10 +287,6 @@ export function ItineraryContent() {
         </View>
     );
 }
-
-/* -------------------------------------------------------------------------- */
-/*  STYLES                                                                    */
-/* -------------------------------------------------------------------------- */
 
 const styles = StyleSheet.create({
     container: { flex: 1, paddingTop: 42 },

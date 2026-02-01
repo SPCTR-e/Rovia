@@ -19,7 +19,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
-// --- Specialized Component to Isolate Animation State ---
+
 const ExpandedTipOverlay = React.memo(({ tip, onClose }: { tip: Tip | null, onClose: () => void }) => {
     const colorScheme = useColorScheme();
     const theme = Colors[colorScheme ?? 'light'];
@@ -198,7 +198,7 @@ export function HomeContent({ onNavigate, onLanguageChange }: { onNavigate: (pat
     return (
         <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]} edges={['top']}>
             <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-                {/* Header */}
+                {}
                 <View style={styles.header}>
                     <View>
                         <Text style={[styles.greeting, { color: theme.textSecondary }]}>{i18n.t('welcome')}</Text>
@@ -216,7 +216,7 @@ export function HomeContent({ onNavigate, onLanguageChange }: { onNavigate: (pat
                     </TouchableOpacity>
                 </View>
 
-                {/* Hero Card */}
+                {}
                 {featuredSight && (
                     <TouchableOpacity
                         activeOpacity={0.9}
@@ -234,7 +234,7 @@ export function HomeContent({ onNavigate, onLanguageChange }: { onNavigate: (pat
                     </TouchableOpacity>
                 )}
 
-                {/* Daily Tips (Stories style) */}
+                {}
                 <View style={[styles.sectionHeader, { marginTop: 10 }]}>
                     <Text style={[styles.sectionTitle, { color: theme.text }]}>{i18n.t('dailyTips')}</Text>
                 </View>
@@ -259,11 +259,11 @@ export function HomeContent({ onNavigate, onLanguageChange }: { onNavigate: (pat
                     ))}
                 </ScrollView>
 
-                {/* Favorites Section */}
+                {}
                 {favoriteSights.length > 0 && (
                     <ExploreSection title={i18n.t('favorites') || 'Favorites'} data={favoriteSights} categoryId="favorites" />
                 )}
-                {/* Explore Categories */}
+                {}
                 <View style={styles.sectionHeader}>
                     <Text style={[styles.sectionTitle, { color: theme.text }]}>{i18n.t('exploreTitle')}</Text>
                 </View>
@@ -282,7 +282,7 @@ export function HomeContent({ onNavigate, onLanguageChange }: { onNavigate: (pat
                     ))}
                 </View>
 
-                {/* Quick Actions */}
+                {}
                 <View style={styles.sectionHeader}>
                     <Text style={[styles.sectionTitle, { color: theme.text }]}>{i18n.t('quickActions')}</Text>
                 </View>
@@ -319,7 +319,7 @@ export function HomeContent({ onNavigate, onLanguageChange }: { onNavigate: (pat
                 </View>
             </ScrollView>
 
-            {/* Language Selection Modal */}
+            {}
             <Modal
                 visible={languageModalVisible}
                 transparent={true}
@@ -372,7 +372,7 @@ export function HomeContent({ onNavigate, onLanguageChange }: { onNavigate: (pat
                 </View>
             </Modal>
 
-            {/* Expanded Tip Overlay */}
+            {}
             <ExpandedTipOverlay tip={selectedTip} onClose={handleCloseTip} />
         </SafeAreaView>
     );

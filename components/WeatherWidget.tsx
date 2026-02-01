@@ -5,35 +5,35 @@ import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
 import { IconSymbol } from './ui/icon-symbol';
 
-// OpenMeteo WMO Weather Codes to SF Symbols
+
 const getWeatherIcon = (code: number, isDay: boolean): string => {
-    // 0: Clear sky
+    
     if (code === 0) return isDay ? 'sun.max.fill' : 'moon.fill';
-    // 1, 2, 3: Mainly clear, partly cloudy, and overcast
+    
     if (code === 1) return isDay ? 'cloud.sun.fill' : 'cloud.moon.fill';
     if (code === 2) return 'cloud.fill';
     if (code === 3) return 'cloud.fill';
-    // 45, 48: Fog
+    
     if (code === 45 || code === 48) return 'cloud.fog.fill';
-    // 51, 53, 55: Drizzle
+    
     if (code >= 51 && code <= 55) return 'cloud.drizzle.fill';
-    // 61, 63, 65: Rain
+    
     if (code >= 61 && code <= 65) return 'cloud.rain.fill';
-    // 66, 67: Freezing Rain
+    
     if (code === 66 || code === 67) return 'cloud.sleet.fill';
-    // 71, 73, 75: Snow fall
+    
     if (code >= 71 && code <= 77) return 'snowflake';
-    // 80, 81, 82: Rain showers
+    
     if (code >= 80 && code <= 82) return 'cloud.sun.rain.fill';
-    // 85, 86: Snow showers
+    
     if (code >= 85 && code <= 86) return 'cloud.snow.fill';
-    // 95, 96, 99: Thunderstorm
+    
     if (code >= 95) return 'cloud.bolt.rain.fill';
 
     return 'questionmark.circle';
 };
 
-// Simplified translation mapping for weather codes
+
 const getWeatherDescription = (code: number, lang: string): string => {
     const descriptions: { [key: number]: { [key: string]: string } } = {
         0: { en: 'Clear sky', fr: 'Ciel dégagé', de: 'Klarer Himmel', es: 'Cielo despejado', it: 'Cielo sereno', ru: 'Ясно', zh: '晴朗', ja: '快晴', pt: 'Céu limpo', tr: 'Açık hava' },
@@ -58,7 +58,7 @@ const getWeatherDescription = (code: number, lang: string): string => {
     };
 
     const codeDesc = descriptions[code];
-    // Fallback logic for languages
+    
     if (!codeDesc) return 'Unknown';
     return (codeDesc as any)[lang] || (codeDesc as any)['en'] || 'Unknown';
 };
@@ -72,7 +72,7 @@ export const WeatherWidget = () => {
     useEffect(() => {
         const fetchWeather = async () => {
             try {
-                // Strasbourg Coordinates: 48.5734, 7.7521
+                
                 const response = await fetch(
                     'https://api.open-meteo.com/v1/forecast?latitude=48.5734&longitude=7.7521&current_weather=true'
                 );

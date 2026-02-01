@@ -2,8 +2,8 @@ import storage from '@/utils/storage';
 import { getLocales } from 'expo-localization';
 import { I18n } from 'i18n-js';
 
-// --- Translation Files ---
-// (We will split these into separate files later if they get too huge)
+
+
 const translations = {
     en: {
         languageName: 'English',
@@ -30,7 +30,7 @@ const translations = {
         sights: 'Sights',
         settings: 'Settings',
         selectLanguage: 'Select Language',
-        // Uppercase versions
+        
         MUSTSEE: 'Must See',
         SIGHTS: 'Sights',
         RESTAURANTS: 'Restaurants',
@@ -724,7 +724,7 @@ const translations = {
 
 const i18n = new I18n(translations);
 
-// --- Data Translation Helper ---
+
 export const tData = (item: any, field: string) => {
     const locale = i18n.locale;
     if (item.translations && item.translations[locale] && item.translations[locale][field]) {
@@ -733,16 +733,16 @@ export const tData = (item: any, field: string) => {
     return item[field];
 };
 
-// Set default fallback (English)
+
 i18n.defaultLocale = 'en';
 i18n.enableFallback = true;
-// Initial setting
+
 i18n.locale = getLocales()?.[0]?.languageCode ?? 'en';
 
-// --- Async Storage Keys ---
+
 const LANGUAGE_KEY = 'user_language';
 
-// --- Functions ---
+
 export const saveLanguage = async (lang: string) => {
     try {
         await storage.setItem(LANGUAGE_KEY, lang);
@@ -762,13 +762,13 @@ export const loadLanguage = async () => {
     } catch (e) {
         console.error('Failed to load language', e);
     }
-    // Fallback to device locale
+    
     const deviceLang = getLocales()?.[0]?.languageCode ?? 'en';
     i18n.locale = deviceLang;
     return deviceLang;
 };
 
-// Export the supported languages list for the UI
+
 export const SUPPORTED_LANGUAGES = Object.keys(translations).map(key => ({
     code: key,
     name: translations[key as keyof typeof translations].languageName

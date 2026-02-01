@@ -11,15 +11,15 @@ const LINES = [
     { ref: 'D', type: 'tram', color: '007934', name: 'Poteries - Kehl Rathaus' },
     { ref: 'E', type: 'tram', color: '660099', name: 'Robertsau L\'Escale - Campus d\'Illkirch' },
     { ref: 'F', type: 'tram', color: '8CC63E', name: 'Place d\'Islande - Wolfisheim Henri Rendu' },
-    // G and H often "bus" in OSM with ref=G / H
+    
     { ref: 'G', type: 'bus', color: 'FFCC00', name: 'Espace Européen de l\'Entreprise - Rotterdam' },
     { ref: 'H', type: 'bus', color: '922b3e', name: 'Gare Centrale - Parlement Européen' },
 ];
 
 async function fetchLine(lineRef, type) {
-    // Overpass Query
-    // Increased timeout to 90s
-    // Added [maxsize: ...] locally if needed but public API usually limits time
+    
+    
+    
     const query = `
         [out:json][timeout:90];
         (
@@ -39,7 +39,7 @@ async function fetchLine(lineRef, type) {
             return data.elements;
         } catch (e) {
             console.error(`Attempt ${i + 1} failed for ${lineRef}:`, e.message);
-            await new Promise(r => setTimeout(r, 2000 * (i + 1))); // Backoff
+            await new Promise(r => setTimeout(r, 2000 * (i + 1))); 
         }
     }
     return [];
@@ -53,8 +53,8 @@ function convertToGeoJSON(elements, lineInfo) {
     elements.forEach(rel => {
         if (rel.members) {
             rel.members.forEach(m => {
-                // Filter only 'way' with geometry
-                // Filter out non-track roles
+                
+                
                 const role = (m.role || '').toLowerCase();
                 if (IGNORED_ROLES.includes(role)) return;
 
@@ -72,7 +72,7 @@ function convertToGeoJSON(elements, lineInfo) {
         id: lineInfo.type === 'tram' ? `TRAM_${lineInfo.ref}` : `BUS_${lineInfo.ref}`,
         type: lineInfo.type,
         name: `Ligne ${lineInfo.ref}`,
-        trajectory: lineInfo.name, // Use static name for now as OSM name might be "Ligne A ..."
+        trajectory: lineInfo.name, 
         color: `#${lineInfo.color}`,
         geoJson: {
             type: 'Feature',
@@ -102,7 +102,7 @@ async function main() {
             console.warn(`No geometry found for ${line.ref}`);
         }
 
-        // Polite delay
+        
         await new Promise(r => setTimeout(r, 1000));
     }
 

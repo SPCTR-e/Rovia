@@ -30,7 +30,7 @@ export function GuideContent({ onClose }: { onClose?: () => void }) {
 
     return (
         <View style={[styles.sheetContainer, { backgroundColor: theme.background }]}>
-            {/* Handle Bar */}
+            {}
             <View style={styles.handleWrapper}>
                 <View style={[styles.handle, { backgroundColor: theme.border }]} />
             </View>
@@ -183,7 +183,7 @@ const styles = StyleSheet.create({
     },
     header: {
         paddingVertical: 12,
-        paddingLeft: 8, // Reduced since container already has padding
+        paddingLeft: 8, 
         paddingRight: 8,
         marginBottom: 8,
     },

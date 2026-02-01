@@ -1,8 +1,8 @@
 
-const fetch = require('node-fetch'); // Ensure node-fetch is available or use native fetch in newer node
+const fetch = require('node-fetch'); 
 
-// Native fetch is available in Node 18+ which likely is the environment.
-// If not we'll use https module but try simple fetch first.
+
+
 
 const BASE_URL = 'https://data.strasbourg.eu/api/explore/v2.1/catalog/datasets';
 
@@ -20,8 +20,8 @@ async function searchDatasets(query) {
             console.log(`\nID: ${ds.dataset_id}`);
             console.log(`Title: ${ds.metas.default.title}`);
             console.log(`Description: ${ds.metas.default.description}`);
-            // Check meaningful links
-            // console.log(JSON.stringify(ds, null, 2)); 
+            
+            
         });
     } catch (e) {
         console.error('Error:', e);

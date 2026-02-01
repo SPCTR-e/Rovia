@@ -36,21 +36,21 @@ export function ScreenTransition({ children, associatedPath }: Props) {
     const opacity = useSharedValue(0);
     const translateX = useSharedValue(0);
 
-    // --- STANDARD TRANSITION LOGIC ---
+    
     useLayoutEffect(() => {
         if (isActive) {
             const isDifferentTab = myIndex !== globalLastIndex;
             const direction = myIndex > globalLastIndex ? 1 : -1;
 
             if (isDifferentTab) {
-                // Start slightly to the side
+                
                 translateX.value = direction * (SCREEN_WIDTH * 0.3);
                 opacity.value = 1;
 
-                // Snap to center
+                
                 translateX.value = withSpring(0, {
                     damping: 25,
-                    stiffness: 200, // Increased stiffness for faster snap
+                    stiffness: 200, 
                     mass: 0.8
                 });
 
@@ -71,29 +71,29 @@ export function ScreenTransition({ children, associatedPath }: Props) {
         }
     };
 
-    // --- INSTANT PAN GESTURE ---
+    
     const pan = Gesture.Pan()
-        .activeOffsetX([-5, 5]) // Super sensitive: Starts after moving just 5 pixels
+        .activeOffsetX([-5, 5]) 
         .onUpdate((event) => {
-            // MOVE THE SCREEN WITH FINGER (Real-time feedback)
-            // We limit the movement so you can't drag it completely off screen
+            
+            
             translateX.value = event.translationX * 0.5;
         })
         .onEnd((event) => {
-            // If dragged far enough (> 60px) OR flicked fast enough (> 400 speed)
+            
             const draggedFar = Math.abs(event.translationX) > 60;
             const flickedFast = Math.abs(event.velocityX) > 400;
 
             if (draggedFar || flickedFast) {
-                // Animate off-screen in the direction of the swipe
+                
                 const exitDirection = event.translationX > 0 ? 1 : -1;
                 translateX.value = withSpring(exitDirection * SCREEN_WIDTH, { velocity: event.velocityX });
 
-                // Trigger route change
+                
                 const direction = event.translationX > 0 ? 'right' : 'left';
                 runOnJS(switchTab)(direction);
             } else {
-                // If swipe was too weak, snap back to center
+                
                 translateX.value = withSpring(0, { damping: 20, stiffness: 200 });
             }
         });

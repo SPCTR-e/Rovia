@@ -5,15 +5,15 @@ let AsyncStorage: any;
 const getAsyncStorage = () => {
     if (AsyncStorage !== undefined) return AsyncStorage;
 
-    // On web, we never want AsyncStorage
+    
     if (Platform.OS === 'web') {
         AsyncStorage = null;
         return null;
     }
 
     try {
-        // Only try to require if we think it might exist in NativeModules
-        // RNCAsyncStorage is the common name for the native module
+        
+        
         const hasNativeModule = !!(NativeModules && (
             NativeModules.RNCAsyncStorage ||
             NativeModules.PlatformLocalStorage ||
@@ -37,7 +37,7 @@ const getAsyncStorage = () => {
     }
 };
 
-// Fallback implementation using memory (or localStorage on web)
+
 const memoryStore: Record<string, string> = {};
 
 const safeStorage = {

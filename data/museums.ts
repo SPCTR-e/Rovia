@@ -49,7 +49,7 @@ export const MUSEUMS = [
         id: 'museum-modern-art',
         name: 'MAMCS',
         shortDescription: 'Modern and Contemporary Art masterpieces.',
-        image: require('@/assets/images/sights/petite-france.jpg'), // Placeholder
+        image: require('@/assets/images/sights/petite-france.jpg'), 
         location: 'Place Hans-Jean-Arp',
         coordinates: { latitude: 48.5794, longitude: 7.7364 },
         category: 'museums',
@@ -95,7 +95,7 @@ export const MUSEUMS = [
         id: 'alsatian-museum',
         name: 'Musée Alsacien',
         shortDescription: 'Daily life in traditional Alsace.',
-        image: require('@/assets/images/sights/petite-france.jpg'), // Placeholder
+        image: require('@/assets/images/sights/petite-france.jpg'), 
         location: 'Quai Saint-Nicolas',
         coordinates: { latitude: 48.5791, longitude: 7.7505 },
         category: 'museums',
@@ -142,7 +142,7 @@ export const MUSEUMS = [
         name: "Vodou Castle Museum",
         shortDescription: "A unique private museum housing the world's largest collection of West African Vodou objects.",
         description: "The Château Vodou is a unique private museum: it presents the world's largest collection of West African Vodou objects. Housed in an exceptional setting, an 1878 water tower, it is managed by an association. Vodou is a religion that encompasses a vast field of practices, rituals, and beliefs. Originating in West Africa, specifically the former kingdom of Dahomey, it took its current form around the 17th century. It frames key life moments (births, unions, deaths) and aims to heal illnesses, maintaining harmony between the visible world and the invisible world of deities and ancestors. The collection of over 1400 objects, all used in religious practices, belongs to the museum's founders: Marc and Marie Luce Arbogast.",
-        image: require('@/assets/images/sights/cathedral.jpg'), // Placeholder
+        image: require('@/assets/images/sights/cathedral.jpg'), 
         category: 'museums',
         location: "4 Rue de Koenigshoffen",
         coordinates: { latitude: 48.5803656266929, longitude: 7.72864010931229 },
@@ -196,7 +196,7 @@ export const MUSEUMS = [
         name: "Mineralogy Museum",
         shortDescription: "Housed in the historic geology building since 1890, displaying a rich collection of minerals.",
         description: "The Mineralogy Museum has been housed since 1890 in the historic geology building located in the heart of the Imperial University campus. Strasbourg's mineralogy collection, one of the oldest in Europe, originated in the late 18th century. It now includes 30,000 samples from all parts of the world with a strong representation of minerals from Central Europe. Today's museum is composed of two main rooms featuring mineral classification and regional minerals.",
-        image: require('@/assets/images/sights/cathedral.jpg'), // Placeholder
+        image: require('@/assets/images/sights/cathedral.jpg'), 
         category: 'museums',
         location: "1 Rue Blessig",
         coordinates: { latitude: 48.583495690756955, longitude: 7.762734029906422 },
@@ -250,7 +250,7 @@ export const MUSEUMS = [
         name: "Zoological Museum",
         shortDescription: "Located in the imperial university district, it houses remarkable zoological collections.",
         description: "Built at the end of the 19th century in the heart of the Imperial University, the Zoological Museum houses remarkable and diverse collections offering a rich overview of global and regional fauna. Visitors are invited on a journey around the world, discovering landscapes from the Arctic to the Andes. The museum also highlights the fragility of nature with spaces dedicated to extinct species and features the bird gallery with over 3,000 specimens.",
-        image: require('@/assets/images/sights/cathedral.jpg'), // Placeholder
+        image: require('@/assets/images/sights/cathedral.jpg'), 
         category: 'museums',
         location: "29 Boulevard de la Victoire",
         coordinates: { latitude: 48.5826940021605, longitude: 7.76467647033501 },
@@ -304,7 +304,7 @@ export const MUSEUMS = [
         name: "Museum of the Œuvre Notre-Dame",
         shortDescription: "Seven centuries of art in Strasbourg and the Upper Rhine, at the foot of the cathedral.",
         description: "Located at the foot of the cathedral, the Museum of the Œuvre Notre-Dame offers a journey discovering seven centuries of art in Strasbourg and the Upper Rhine region. Its rich medieval and Renaissance collections testify to the city's prestigious past, a major artistic center of the Germanic Empire from the 13th to the 16th century. Masterpieces of sculpture from the cathedral - the Church, the Synagogue, or the famous Tempter - stand alongside the finest examples of Upper Rhenish art from the 15th and 16th centuries.",
-        image: require('@/assets/images/sights/cathedral.jpg'), // Placeholder
+        image: require('@/assets/images/sights/cathedral.jpg'), 
         category: 'museums',
         location: "3 Place du Château",
         coordinates: { latitude: 48.5809953435319, longitude: 7.75136573309466 },
@@ -358,7 +358,7 @@ export const MUSEUMS = [
         name: "Historical Museum",
         shortDescription: "Housed in the city's Great Butchery (1588), exploring Strasbourg's history from the Middle Ages to 1800.",
         description: "Housed in the city's Great Butchery built in 1588, the Historical Museum offers a journey through the history of Strasbourg from the Middle Ages to 1800. Through an exhibition of various objects (glasses, sleighs, archaeological collections, furniture, weapons, costumes), visitors discover the life of a free city of the Holy Roman Empire and its royal transformation. A 1727 relief map of about 70m² showcases the medieval and Renaissance city.",
-        image: require('@/assets/images/sights/cathedral.jpg'), // Placeholder
+        image: require('@/assets/images/sights/cathedral.jpg'), 
         category: 'museums',
         location: "2 Rue du Vieux Marché aux Poissons",
         coordinates: { latitude: 48.5798990444336, longitude: 7.74977934965869 },
@@ -412,7 +412,7 @@ export const MUSEUMS = [
         name: "Archaeological Museum",
         shortDescription: "One of France's richest museums for 'national antiquities', located in the Rohan Palace.",
         description: "Housed in the basement of the Rohan Palace since the end of the 19th century, the Archaeological Museum of Strasbourg is one of the richest in France for 'national antiquities'. Its collections invite visitors on a journey through the ancient history of Alsace, from the distant Prehistoric origins (600,000 BC) to the dawn of the Middle Ages (800 AD). Discover the daily life of Paleolithic hunters, Neolithic farmers, Bronze and Iron Age burials, and the Gallo-Roman civilization.",
-        image: require('@/assets/images/sights/cathedral.jpg'), // Placeholder
+        image: require('@/assets/images/sights/cathedral.jpg'), 
         category: 'museums',
         location: "2 Place du Château",
         coordinates: { latitude: 48.5812360161211, longitude: 7.7519897124585 },
@@ -466,7 +466,7 @@ export const MUSEUMS = [
         name: "Tomi Ungerer Museum",
         shortDescription: "Located in Villa Greiner, housing a collection of 11,000 drawings by Tomi Ungerer.",
         description: "Located in the Villa Greiner, built at the end of the 19th century in the heart of the imperial district, the museum preserves a collection of 11,000 drawings donated to his hometown by Tomi Ungerer, an illustrator born in Strasbourg in 1931. It also houses a collection of 20th-century illustration art. The museum presents a selection of 300 original works by the artist, rotated through three exhibitions per year.",
-        image: require('@/assets/images/sights/cathedral.jpg'), // Placeholder
+        image: require('@/assets/images/sights/cathedral.jpg'), 
         category: 'museums',
         location: "2 Avenue de la Marseillaise",
         coordinates: { latitude: 48.5857337818569, longitude: 7.7550324987555 },

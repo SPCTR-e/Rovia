@@ -7,30 +7,30 @@ import React, { useState } from 'react';
 import { ActivityIndicator, LayoutAnimation, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 const ParkingCard = ({ parking, theme, onPress }: { parking: ParkingData, theme: any, onPress: () => void }) => {
-    // Determine status color
-    // If closed -> Gray/Red
-    // If < 10% free -> Red
-    // If < 30% free -> Orange
-    // Else -> Green
+    
+    
+    
+    
+    
 
     const isOpen = parking.etat_descriptif === 'Ouvert';
     const percentFree = parking.total > 0 ? (parking.libre / parking.total) : 0;
     const occupancyPercent = 1 - percentFree;
 
-    let statusColor = theme.success; // Default Green
+    let statusColor = theme.success; 
     let statusText = i18n.t('available');
 
     if (!isOpen) {
         statusColor = theme.textSecondary;
         statusText = i18n.t('closed');
     } else if (parking.libre === 0) {
-        statusColor = theme.error; // Red
+        statusColor = theme.error; 
         statusText = i18n.t('full');
     } else if (percentFree < 0.1) {
-        statusColor = theme.error; // Red
+        statusColor = theme.error; 
         statusText = i18n.t('nearlyFull');
     } else if (percentFree < 0.3) {
-        statusColor = '#FFA500'; // Orange
+        statusColor = '#FFA500'; 
         statusText = i18n.t('busy');
     }
 
@@ -51,7 +51,7 @@ const ParkingCard = ({ parking, theme, onPress }: { parking: ParkingData, theme:
                 )}
             </View>
 
-            {/* Progress Bar */}
+            {}
             <View style={[styles.progressTrack, { backgroundColor: theme.border }]}>
                 <View
                     style={[
@@ -122,14 +122,14 @@ export function ParkingList({
         );
     }
 
-    // Sort: Open first, then by availability
+    
     const sortedData = [...data].sort((a, b) => {
         if (a.etat_descriptif === 'Ouvert' && b.etat_descriptif !== 'Ouvert') return -1;
         if (a.etat_descriptif !== 'Ouvert' && b.etat_descriptif === 'Ouvert') return 1;
         return 0;
     });
 
-    // Show only first 6 items unless expanded
+    
     const displayData = isExpanded ? sortedData : sortedData.slice(0, 6);
 
     return (
@@ -226,10 +226,10 @@ const styles = StyleSheet.create({
     grid: {
         flexDirection: 'row',
         flexWrap: 'wrap',
-        marginHorizontal: -6, // Offset padding for grid
+        marginHorizontal: -6, 
     },
     gridItem: {
-        width: '50%', // 2 columns
+        width: '50%', 
         padding: 6,
     },
     card: {

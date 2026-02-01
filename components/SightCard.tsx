@@ -43,7 +43,7 @@ export const SightCard = React.memo(({ sight, onPress, style }: SightCardProps) 
         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     };
 
-    // Find category color
+    
     const categoryColor = CATEGORIES.find(c => c.nameKey === sight.category)?.color || theme.tint;
 
     return (
@@ -76,7 +76,7 @@ export const SightCard = React.memo(({ sight, onPress, style }: SightCardProps) 
 
                 <View style={styles.content}>
                     <Text style={[styles.title, { color: theme.text }]} numberOfLines={2}>{tData(sight, 'name')}</Text>
-                    {/* Optional: Add rating or location here if desired for playing card look */}
+                    {}
                 </View>
             </Animated.View>
         </Pressable>
@@ -87,7 +87,7 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         marginBottom: 16,
-        marginHorizontal: 8, // Add gap between columns
+        marginHorizontal: 8, 
     },
     card: {
         borderRadius: 16,
@@ -98,10 +98,10 @@ const styles = StyleSheet.create({
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.1,
         shadowRadius: 4,
-        height: 240, // Fixed height for "playing card" aspect ratio
+        height: 240, 
     },
     imageContainer: {
-        height: '70%', // Image takes up most of the card
+        height: '70%', 
         width: '100%',
         position: 'relative',
     },
@@ -132,7 +132,7 @@ const styles = StyleSheet.create({
     title: {
         fontSize: 16,
         fontWeight: '700',
-        textAlign: 'center', // Center title like a card label
+        textAlign: 'center', 
         fontFamily: 'System',
     },
     favoriteBadge: {

@@ -21,7 +21,7 @@ export type ExploreContentProps = {
     setCategory: (cat: string) => void;
 };
 
-// Helper to get color
+
 const getCategoryColor = (type: string) => {
     return CATEGORIES.find(c => c.nameKey === type)?.color || '#888';
 };
@@ -36,12 +36,12 @@ const getCategoryIcon = (type: string) => {
     }
 };
 
-const CITY_CENTER = [7.7506, 48.5818]; // Near Cathedral
-const ALSACE_CENTER = [7.70, 48.56]; // Approximate center of Alsace
+const CITY_CENTER = [7.7506, 48.5818]; 
+const ALSACE_CENTER = [7.70, 48.56]; 
 
-// --- Map Marker Component ---
+
 const MapMarker = ({ item, isFocused, color, icon, onSelect }: any) => {
-    // Use standard React Native Animated for better compatibility with Mapbox
+    
     const scaleAnim = useRef(new RNAnimated.Value(1)).current;
 
     useEffect(() => {
@@ -49,7 +49,7 @@ const MapMarker = ({ item, isFocused, color, icon, onSelect }: any) => {
             toValue: isFocused ? 1.5 : 1,
             friction: 5,
             tension: 40,
-            useNativeDriver: true, // Native driver usually works for transform
+            useNativeDriver: true, 
         }).start();
     }, [isFocused]);
 
@@ -81,7 +81,7 @@ export function ExploreContent({ category, setCategory }: ExploreContentProps) {
 
     const [search, setSearch] = useState('');
     const [isMapVisible, setIsMapVisible] = useState(false);
-    // Map Filter State: "all" | "sights" | "restaurants" | "museums" | "activities"
+    
     const [mapFilter, setMapFilter] = useState('all');
     const [selectedItem, setSelectedItem] = useState<any | null>(null);
     const [cameraCenter, setCameraCenter] = useState(CITY_CENTER);
@@ -95,7 +95,7 @@ export function ExploreContent({ category, setCategory }: ExploreContentProps) {
 
     const normalize = (str: string) => str ? str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase() : "";
 
-    // Centralized search matching logic
+    
     const checkSearchMatch = (item: any, searchInput: string) => {
         if (!searchInput) return true;
 
@@ -114,20 +114,20 @@ export function ExploreContent({ category, setCategory }: ExploreContentProps) {
         const searchInput = normalize(search);
 
         if (!searchInput) {
-            // If no search, respect the active category tab
+            
             const filterCategory = category.toLowerCase();
             return allItems.filter(item => {
-                // Use item.type which we explicitly set, as fallback for data.category
+                
                 const itemCat = (item.type || item.category || '').toLowerCase();
                 return itemCat === filterCategory;
             });
         }
 
-        // Global Search Mode
+        
         return allItems.filter(item => checkSearchMatch(item, searchInput));
     }, [allItems, search, category]);
 
-    // Clear selection when filter changes
+    
     const handleFilterChange = (newFilter: string) => {
         setMapFilter(newFilter);
         setSelectedItem(null);
@@ -148,7 +148,7 @@ export function ExploreContent({ category, setCategory }: ExploreContentProps) {
 
     return (
         <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]} edges={['top']}>
-            {/* ... FlatList ... */}
+            {}
             <FlatList
                 data={filteredItems}
                 keyExtractor={item => item.id}
@@ -175,9 +175,9 @@ export function ExploreContent({ category, setCategory }: ExploreContentProps) {
                             <TouchableOpacity
                                 style={[styles.mapButton, { backgroundColor: theme.primary }]}
                                 onPress={() => {
-                                    setMapFilter('all');      // Reset filter to All
-                                    setSelectedItem(null);    // Clear any selection
-                                    setCameraCenter(CITY_CENTER); // Reset camera
+                                    setMapFilter('all');      
+                                    setSelectedItem(null);    
+                                    setCameraCenter(CITY_CENTER); 
                                     setIsMapVisible(true);
                                 }}
                             >
@@ -196,10 +196,10 @@ export function ExploreContent({ category, setCategory }: ExploreContentProps) {
                 showsVerticalScrollIndicator={false}
                 numColumns={2}
                 columnWrapperStyle={styles.columnWrapper}
-                key={`grid-2`} // Force remount if columns change (good practice)
+                key={`grid-2`} 
             />
 
-            {/* Explore Map Modal */}
+            {}
             <Modal
                 visible={isMapVisible}
                 animationType="fade"
@@ -211,7 +211,7 @@ export function ExploreContent({ category, setCategory }: ExploreContentProps) {
                         <Mapbox.MapView
                             style={{ flex: 1 }}
                             styleURL={Mapbox.StyleURL.Street}
-                            onPress={() => setSelectedItem(null)} // Deselect on map click
+                            onPress={() => setSelectedItem(null)} 
                         >
                             <Mapbox.Camera
                                 defaultSettings={{
@@ -224,15 +224,15 @@ export function ExploreContent({ category, setCategory }: ExploreContentProps) {
                                 animationDuration={1000}
                             />
 
-                            {/* Render Custom Pins for ALL items */}
+                            {}
                             {allItems.map((item) => {
                                 const isCategoryMatch = mapFilter === 'all' || mapFilter === item.type;
 
-                                // Search Filter
+                                
                                 const searchInput = normalize(search);
                                 const isSearchMatch = checkSearchMatch(item, searchInput);
 
-                                // If not selected, do not render at all (Hiding pins completely as requested)
+                                
                                 if (!isCategoryMatch || !isSearchMatch || !item.coordinates) return null;
 
                                 const color = getCategoryColor(item.type);
@@ -255,8 +255,8 @@ export function ExploreContent({ category, setCategory }: ExploreContentProps) {
                             })}
                         </Mapbox.MapView>
 
-                        {/* Floating Filter Bar - Hidden when item is selected */}
-                        {/* Floating Close Button */}
+                        {}
+                        {}
                         <TouchableOpacity
                             style={[
                                 styles.floatingCloseBtn,
@@ -267,7 +267,7 @@ export function ExploreContent({ category, setCategory }: ExploreContentProps) {
                             <IconSymbol name="xmark" size={20} color={theme.text} />
                         </TouchableOpacity>
 
-                        {/* Search Pill */}
+                        {}
                         <View style={[
                             styles.mapSearchPill,
                             { backgroundColor: theme.cardBackground, borderColor: theme.border }
@@ -288,7 +288,7 @@ export function ExploreContent({ category, setCategory }: ExploreContentProps) {
                             )}
                         </View>
 
-                        {/* Floating Filter Bar - Hidden when item is selected */}
+                        {}
                         {!selectedItem && isMapVisible && (
                             <Animated.View
                                 style={styles.filterContainer}
@@ -312,7 +312,7 @@ export function ExploreContent({ category, setCategory }: ExploreContentProps) {
                                                         backgroundColor: isActive ? activeBg : theme.cardBackground,
                                                         borderColor: activeBg,
                                                         borderWidth: 1,
-                                                        zIndex: 101, // Boost individual button zIndex
+                                                        zIndex: 101, 
                                                         elevation: 101
                                                     }
                                                 ]}
@@ -341,17 +341,17 @@ export function ExploreContent({ category, setCategory }: ExploreContentProps) {
                                     activeOpacity={0.9}
                                     style={[styles.mapCard, { backgroundColor: theme.cardBackground, borderColor: theme.border }]}
                                     onPress={() => {
-                                        // Do NOT close the map here.
-                                        // When the user goes back, the modal will still be visible.
+                                        
+                                        
                                         router.push(`/sight/${selectedItem.id}` as any);
                                     }}
                                 >
-                                    {/* Image */}
+                                    {}
                                     <View style={styles.mapCardImageContainer}>
                                         <Image source={selectedItem.image} style={styles.mapCardImage} />
                                     </View>
 
-                                    {/* Content */}
+                                    {}
                                     <View style={styles.mapCardContent}>
                                         <View style={styles.mapCardHeader}>
                                             <Text style={[styles.mapCardTitle, { color: theme.text }]} numberOfLines={1}>
@@ -367,7 +367,7 @@ export function ExploreContent({ category, setCategory }: ExploreContentProps) {
                                                 <Text style={styles.miniChipText}>{i18n.t(selectedItem.type as any).toUpperCase()}</Text>
                                             </View>
                                             <View style={{ flexDirection: 'row', gap: 12 }}>
-                                                {/* Directions Button */}
+                                                {}
                                                 <TouchableOpacity
                                                     style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: theme.cardBackground, padding: 6, borderRadius: 8, borderWidth: 1, borderColor: theme.border }}
                                                     onPress={(e) => {
@@ -387,11 +387,11 @@ export function ExploreContent({ category, setCategory }: ExploreContentProps) {
                                         </View>
                                     </View>
 
-                                    {/* Close Button */}
+                                    {}
                                     <TouchableOpacity
                                         style={[styles.cardCloseBtn, { backgroundColor: theme.background }]}
                                         onPress={(e) => {
-                                            e.stopPropagation(); // Prevent card press
+                                            e.stopPropagation(); 
                                             setSelectedItem(null);
                                         }}
                                         hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
@@ -454,10 +454,10 @@ const styles = StyleSheet.create({
     listContent: {
         padding: 12,
         paddingTop: 0,
-        paddingBottom: 120, // Extra padding for floating tab bar
+        paddingBottom: 120, 
     },
     columnWrapper: {
-        justifyContent: 'space-between', // Ensures cards are spaced evenly
+        justifyContent: 'space-between', 
     },
     modalHeader: {
         padding: 16,
@@ -478,19 +478,19 @@ const styles = StyleSheet.create({
         bottom: 20,
         left: 0,
         right: 0,
-        zIndex: 100, // Ensure buttons are clickable above the map
+        zIndex: 100, 
         elevation: 100,
     },
     filterScroll: {
         paddingHorizontal: 20,
-        paddingVertical: 12, // Added padding to prevent shadow clipping
+        paddingVertical: 12, 
         gap: 10,
     },
     filterChip: {
         paddingHorizontal: 16,
         paddingVertical: 8,
         borderRadius: 20,
-        // No shadow as requested
+        
     },
     filterText: {
         fontWeight: '600',
@@ -514,7 +514,7 @@ const styles = StyleSheet.create({
     },
     infoCardContainer: {
         position: 'absolute',
-        bottom: 50, // Moved up slightly
+        bottom: 50, 
         left: 16,
         right: 16,
         zIndex: 200,
@@ -522,7 +522,7 @@ const styles = StyleSheet.create({
     },
     mapCard: {
         flexDirection: 'row',
-        height: 120, // Fixed height for consistency
+        height: 120, 
         borderRadius: 16,
         borderWidth: 1,
         overflow: 'hidden',
@@ -547,7 +547,7 @@ const styles = StyleSheet.create({
         justifyContent: 'space-between',
     },
     mapCardHeader: {
-        paddingRight: 20, // Space for close button
+        paddingRight: 20, 
     },
     mapCardTitle: {
         fontSize: 16,
@@ -589,7 +589,7 @@ const styles = StyleSheet.create({
     },
     floatingCloseBtn: {
         position: 'absolute',
-        top: 50, // SafeArea
+        top: 50, 
         left: 20,
         width: 44,
         height: 44,
@@ -605,7 +605,7 @@ const styles = StyleSheet.create({
     mapSearchPill: {
         position: 'absolute',
         top: 50,
-        left: 74, // 20 (left) + 44 (btn width) + 10 (gap)
+        left: 74, 
         right: 20,
         height: 44,
         borderRadius: 22,

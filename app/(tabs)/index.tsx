@@ -8,7 +8,7 @@ export default function HomeScreen() {
 
   const handleNavigate = (path: string, cat?: string) => {
     if (path === '/explore' && cat) {
-      // Navigate to the Explore tab with the category param
+      
       router.push({ pathname: '/explore', params: { category: cat } });
     } else if (path === '/explore') {
       router.push('/explore');

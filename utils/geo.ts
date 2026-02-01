@@ -3,9 +3,7 @@ export interface Coordinate {
     longitude: number;
 }
 
-/**
- * Projects a lat/lon to a cartesian approximation (meters) relative to a reference point.
- */
+
 function project(coord: Coordinate, ref: Coordinate): { x: number; y: number } {
     const latRad = (ref.latitude * Math.PI) / 180;
     const METERS_PER_LAT = 111132;
@@ -16,9 +14,7 @@ function project(coord: Coordinate, ref: Coordinate): { x: number; y: number } {
     return { x, y };
 }
 
-/**
- * Unprojects a cartesian point back to lat/lon using the same reference.
- */
+
 function unproject(point: { x: number; y: number }, ref: Coordinate): Coordinate {
     const latRad = (ref.latitude * Math.PI) / 180;
     const METERS_PER_LAT = 111132;
@@ -29,10 +25,7 @@ function unproject(point: { x: number; y: number }, ref: Coordinate): Coordinate
     return { latitude, longitude };
 }
 
-/**
- * Offset a polyline by a certain distance in meters.
- * Positive offset is to the right of the path, negative to the left.
- */
+
 export function offsetPolyline(coordinates: Coordinate[], offsetMeters: number): Coordinate[] {
     if (coordinates.length < 2 || offsetMeters === 0) {
         return coordinates;
@@ -45,7 +38,7 @@ export function offsetPolyline(coordinates: Coordinate[], offsetMeters: number):
     for (let i = 0; i < points.length; i++) {
         const curr = points[i];
 
-        // Vectors for adjacent segments
+        
         let vIn: { x: number; y: number } | null = null;
         let vOut: { x: number; y: number } | null = null;
 
@@ -65,23 +58,23 @@ export function offsetPolyline(coordinates: Coordinate[], offsetMeters: number):
             if (len > 0) vOut = { x: dx / len, y: dy / len };
         }
 
-        // Calculate normal vector
+        
         let nx = 0;
         let ny = 0;
 
         if (vIn && vOut) {
-            // Interior point: average turning normal
-            // Tangent roughly average of vIn and vOut
+            
+            
             const tx = vIn.x + vOut.x;
             const ty = vIn.y + vOut.y;
-            // Normal is perpendicular to tangent (-ty, tx)
-            // But checking orientation...
-            // Standard approach: Offset is sum of offset vectors of segments / sin(alpha/2)?
-            // Creating a simple miter join logic
+            
+            
+            
+            
 
-            // Simple visual approach: average the segment normals
-            // Normal of In: (-vIn.y, vIn.x) (Right side)
-            // Normal of Out: (-vOut.y, vOut.x) (Right side)
+            
+            
+            
 
             const nInX = -vIn.y;
             const nInY = vIn.x;
@@ -89,26 +82,26 @@ export function offsetPolyline(coordinates: Coordinate[], offsetMeters: number):
             const nOutX = -vOut.y;
             const nOutY = vOut.x;
 
-            // Average normal
+            
             let mx = nInX + nOutX;
             let my = nInY + nOutY;
             const mLen = Math.sqrt(mx * mx + my * my);
 
-            if (mLen > 0.1) { // Avoid degenerate cases
+            if (mLen > 0.1) { 
                 nx = mx / mLen;
                 ny = my / mLen;
             } else {
-                // 180 degree turn or similar? Use incoming
+                
                 nx = nInX;
                 ny = nInY;
             }
 
         } else if (vOut) {
-            // Start point
+            
             nx = -vOut.y;
             ny = vOut.x;
         } else if (vIn) {
-            // End point
+            
             nx = -vIn.y;
             ny = vIn.x;
         }
@@ -122,9 +115,7 @@ export function offsetPolyline(coordinates: Coordinate[], offsetMeters: number):
     return offsetPoints.map(p => unproject(p, ref));
 }
 
-/**
- * Converts an array of Coordinate objects to a GeoJSON LineString geometry.
- */
+
 export function toGeoJSONLineString(coordinates: Coordinate[]) {
     return {
         type: 'LineString' as const,
@@ -132,11 +123,9 @@ export function toGeoJSONLineString(coordinates: Coordinate[]) {
     };
 }
 
-/**
- * Calculate distance between two points in meters using Haversine formula.
- */
+
 export function getDistance(coord1: Coordinate, coord2: Coordinate): number {
-    const R = 6371e3; // Earth radius in meters
+    const R = 6371e3; 
     const lat1 = (coord1.latitude * Math.PI) / 180;
     const lat2 = (coord2.latitude * Math.PI) / 180;
     const dLat = ((coord2.latitude - coord1.latitude) * Math.PI) / 180;
@@ -150,12 +139,7 @@ export function getDistance(coord1: Coordinate, coord2: Coordinate): number {
     return R * c;
 }
 
-/**
- * Generate a GeoJSON Polygon representing a circle.
- * @param center Center coordinate [lon, lat]
- * @param radiusInKm Radius in kilometers (e.g., 0.4 for 400m)
- * @param points Number of vertices in the polygon
- */
+
 export function createGeoJSONCircle(center: [number, number], radiusInKm: number, points: number = 64) {
     if (!center) return null;
 

@@ -23,8 +23,8 @@ export function useParkingData() {
     const fetchData = useCallback(async () => {
         try {
             setLoading(true);
-            // Append timestamp to prevent caching
-            // Add headers to look like a legitimate client
+            
+            
             const response = await fetch(`${API_URL}&_t=${Date.now()}`, {
                 headers: {
                     'Accept': 'application/json',
@@ -35,7 +35,7 @@ export function useParkingData() {
 
             const json = await response.json();
 
-            // Map the results to our interface
+            
             const parkings = json.results
                 .map((record: any) => ({
                     nom_parking: record.nom_parking,
@@ -45,7 +45,7 @@ export function useParkingData() {
                     position: record.position,
                     taux_occup: record.taux_occup
                 }))
-                // Filter out invalid records to prevent crashes
+                
                 .filter((p: any) => p.nom_parking && p.position && p.position.lon && p.position.lat);
 
             console.log(`[useParkingData] Fetched ${parkings.length} parking spots`);
@@ -64,7 +64,7 @@ export function useParkingData() {
 
     useEffect(() => {
         fetchData();
-        const interval = setInterval(fetchData, 60000); // 1 minute refresh
+        const interval = setInterval(fetchData, 60000); 
         return () => clearInterval(interval);
     }, [fetchData]);
 

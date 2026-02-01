@@ -23,7 +23,7 @@ async function checkStops() {
         }
 
         const data = await response.json();
-        // Log first 2 stops to see structure
+        
         const stops = data?.StopPointsDiscoveryResponse?.AnnotatedStopPointRef || [];
         console.log('Stops count:', stops.length);
         console.log('First 2 stops:', JSON.stringify(stops.slice(0, 2), null, 2));

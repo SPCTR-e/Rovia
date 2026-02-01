@@ -95,7 +95,7 @@ export const ACTIVITIES = [
         id: 'wine-cellar',
         name: 'Historic Wine Cellar',
         shortDescription: 'Visit the 1395 barrel in the Hospital.',
-        image: require('@/assets/images/sights/palais-rohan.jpg'), // Placeholder
+        image: require('@/assets/images/sights/palais-rohan.jpg'), 
         location: 'Hôpital Civil',
         coordinates: { latitude: 48.5768, longitude: 7.7460 },
         category: 'activities',
@@ -142,7 +142,7 @@ export const ACTIVITIES = [
         name: "Cinema Vox",
         shortDescription: "Located in a historic building in the city center, offering modern films.",
         description: "Located in the heart of the city within a historic building, this cinema features seven screens showing the latest film releases in both French and original versions.",
-        image: require('@/assets/images/sights/cathedral.jpg'), // Placeholder
+        image: require('@/assets/images/sights/cathedral.jpg'), 
         category: 'activities',
         location: "17 Rue des Francs-Bourgeois",
         coordinates: { latitude: 48.5817466320027, longitude: 7.74639246042351 },
