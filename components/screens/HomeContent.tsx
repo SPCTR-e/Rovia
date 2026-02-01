@@ -1,3 +1,4 @@
+import { WeatherWidget } from '@/components/WeatherWidget';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { Colors } from '@/constants/theme';
 import { ACTIVITIES } from '@/data/activities';
@@ -202,6 +203,7 @@ export function HomeContent({ onNavigate, onLanguageChange }: { onNavigate: (pat
                     <View>
                         <Text style={[styles.greeting, { color: theme.textSecondary }]}>{i18n.t('welcome')}</Text>
                         <Text style={[styles.title, { color: theme.text }]}>Strasbourg</Text>
+                        <WeatherWidget />
                     </View>
                     <TouchableOpacity
                         onPress={() => setLanguageModalVisible(true)}
@@ -383,7 +385,7 @@ const styles = StyleSheet.create({
     scrollContent: {
         paddingHorizontal: 20,
         paddingTop: 10,
-        paddingBottom: 20,
+        paddingBottom: 50,
     },
     header: {
         flexDirection: 'row',

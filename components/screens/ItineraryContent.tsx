@@ -1,0 +1,379 @@
+import { useRouter } from 'expo-router';
+import React, { useEffect, useMemo, useState } from 'react';
+import {
+    Image,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View
+} from 'react-native';
+import { Gesture, GestureDetector } from 'react-native-gesture-handler';
+import Animated, {
+    runOnJS,
+    useAnimatedReaction,
+    useAnimatedStyle,
+    useSharedValue,
+    withSpring,
+} from 'react-native-reanimated';
+
+import { Colors } from '@/constants/theme';
+import { useColorScheme } from '@/hooks/use-color-scheme';
+import { useFavorites } from '@/hooks/use-favorites';
+import { tData } from '@/i18n';
+
+import { ACTIVITIES } from '@/data/activities';
+import { CATEGORIES } from '@/data/categories';
+import { MUSEUMS } from '@/data/museums';
+import { RESTAURANTS } from '@/data/restaurants';
+import { SIGHTS } from '@/data/sights';
+
+import { IconSymbol } from '../ui/icon-symbol';
+
+/* -------------------------------------------------------------------------- */
+/*  CONSTANTS                                                                 */
+/* -------------------------------------------------------------------------- */
+
+const ROW_HEIGHT = 104; // must match visual height (card + margin)
+const LIST_MARGIN = 5; // buffer for top item animation overshoot
+
+/* -------------------------------------------------------------------------- */
+/*  DATA LOOKUP                                                               */
+/* -------------------------------------------------------------------------- */
+
+const ALL_ITEMS_MAP = new Map<string, any>();
+[...SIGHTS, ...MUSEUMS, ...RESTAURANTS, ...ACTIVITIES].forEach(item => {
+    ALL_ITEMS_MAP.set(item.id, item);
+});
+
+/* -------------------------------------------------------------------------- */
+/*  DRAGGABLE ROW                                                             */
+/* -------------------------------------------------------------------------- */
+
+function DraggableRow({
+    id,
+    index,
+    positions,
+    sharedData,
+    theme,
+    onPress,
+    onDelete,
+    onDragEnd,
+}: any) {
+    const item = ALL_ITEMS_MAP.get(id);
+    if (!item) return null;
+
+    const top = useSharedValue(index * ROW_HEIGHT);
+
+    const catColor = useMemo(() => {
+        return (
+            CATEGORIES.find(c => c.nameKey === item.category)?.color ||
+            CATEGORIES.find(c => c.id === item.category)?.color ||
+            CATEGORIES[0].color
+        );
+    }, [item.category]);
+
+    const startY = useSharedValue(0);
+    const isDragging = useSharedValue(false);
+
+    useAnimatedReaction(
+        () => positions.value[id],
+        (currentPosition, previousPosition) => {
+            if (currentPosition !== previousPosition && !isDragging.value) {
+                top.value = withSpring(currentPosition * ROW_HEIGHT, {
+                    mass: 0.8,
+                    damping: 15,
+                    stiffness: 150,
+                    overshootClamping: false,
+                });
+            }
+        },
+        [positions, id]
+    );
+
+    const style = useAnimatedStyle(() => ({
+        position: 'absolute',
+        top: top.value,
+        left: 0,
+        right: 0,
+        zIndex: isDragging.value ? 999 : 1,
+        elevation: isDragging.value ? 10 : 2,
+    }));
+
+    const pan = Gesture.Pan()
+        .onStart(() => {
+            isDragging.value = true;
+            startY.value = top.value;
+        })
+        .onUpdate((e) => {
+            top.value = startY.value + e.translationY;
+
+            const newIndex = Math.round(top.value / ROW_HEIGHT);
+            const clamped = Math.max(0, Math.min(sharedData.value.length - 1, newIndex));
+            const oldIndex = positions.value[id];
+
+            if (clamped !== oldIndex) {
+                // UI Thread Reorder Logic
+                const currentOrder = [...sharedData.value];
+                const item = currentOrder.splice(oldIndex, 1)[0];
+                currentOrder.splice(clamped, 0, item);
+
+                sharedData.value = currentOrder;
+
+                const newPos: Record<string, number> = {};
+                for (let i = 0; i < currentOrder.length; i++) {
+                    newPos[currentOrder[i]] = i;
+                }
+                positions.value = newPos;
+            }
+        })
+        .onEnd(() => {
+            isDragging.value = false;
+            top.value = withSpring(positions.value[id] * ROW_HEIGHT, {
+                mass: 0.8,
+                damping: 15,
+                stiffness: 150,
+                overshootClamping: false,
+            });
+            runOnJS(onDragEnd)(sharedData.value);
+        });
+
+    return (
+        <GestureDetector gesture={pan}>
+            <Animated.View style={[style]}>
+                <View style={styles.timelineItem}>
+                    <View style={styles.timelineConnector}>
+                        <View
+                            style={[
+                                styles.timelineNode,
+                                { backgroundColor: catColor, borderColor: theme.background },
+                            ]}
+                        >
+                            <Text style={styles.timelineNumber}>
+                                {positions.value[id] !== undefined ? positions.value[id] + 1 : ''}
+                            </Text>
+                        </View>
+                    </View>
+
+                    <TouchableOpacity
+                        activeOpacity={0.95}
+                        style={[
+                            styles.card,
+                            {
+                                backgroundColor: theme.cardBackground,
+                                borderColor: theme.border,
+                            },
+                        ]}
+                        onPress={() => onPress(id)}
+                    >
+                        <Image source={item.image} style={styles.image} />
+
+                        <View style={styles.content}>
+                            <Text style={[styles.title, { color: theme.text }]} numberOfLines={1}>
+                                {tData(item, 'name')}
+                            </Text>
+
+                            <View
+                                style={[
+                                    styles.categoryBadge,
+                                    { backgroundColor: catColor + '40' },
+                                ]}
+                            >
+                                <Text style={[styles.categoryText, { color: theme.text }]}>
+                                    {item.category?.toUpperCase()}
+                                </Text>
+                            </View>
+
+                            <View style={styles.locationContainer}>
+                                <IconSymbol
+                                    name="mappin.and.ellipse"
+                                    size={12}
+                                    color={theme.textSecondary}
+                                />
+                                <Text
+                                    style={[styles.subtitle, { color: theme.textSecondary }]}
+                                    numberOfLines={1}
+                                >
+                                    {tData(item, 'location')}
+                                </Text>
+                            </View>
+                        </View>
+
+                        <TouchableOpacity
+                            style={styles.deleteButton}
+                            onPress={() => onDelete(id)}
+                        >
+                            <IconSymbol name="trash.fill" size={20} color="#FF6B6B" />
+                        </TouchableOpacity>
+
+                        <View style={styles.dragHandle}>
+                            <IconSymbol
+                                name="line.3.horizontal"
+                                size={24}
+                                color={theme.textSecondary}
+                            />
+                        </View>
+                    </TouchableOpacity>
+                </View>
+            </Animated.View>
+        </GestureDetector>
+    );
+}
+
+/* -------------------------------------------------------------------------- */
+/*  MAIN                                                                      */
+/* -------------------------------------------------------------------------- */
+
+export function ItineraryContent() {
+    const router = useRouter();
+    const theme = Colors[useColorScheme() ?? 'light'];
+    const { favorites, reorderFavorites, toggleFavorite } = useFavorites();
+
+    const [data, setData] = useState<string[]>(favorites);
+
+    // Sync local data with global favorites
+    useEffect(() => {
+        setData(favorites);
+    }, [favorites]);
+
+    const positions = useSharedValue(
+        Object.fromEntries(favorites.map((id, i) => [id, i]))
+    );
+
+
+
+    const sharedData = useSharedValue(data);
+
+    useEffect(() => {
+        sharedData.value = data;
+    }, [data]);
+
+    useEffect(() => {
+        positions.value = Object.fromEntries(
+            data.map((id, index) => [id, index])
+        );
+    }, [data]);
+
+    const handlePress = (id: string) => {
+        router.push(`/sight/${id}` as any);
+    };
+
+    const handleDelete = (id: string) => {
+        setData(prev => {
+            const newData = prev.filter(x => x !== id);
+            reorderFavorites(newData);
+            return newData;
+        });
+    };
+
+    const handleDragEnd = (newData: string[]) => {
+        setData(newData);
+        reorderFavorites(newData);
+    };
+
+    return (
+        <View style={[styles.container, { backgroundColor: theme.background }]}>
+            <View style={styles.header}>
+                <Text style={[styles.headerTitle, { color: theme.text }]}>
+                    My Itinerary
+                </Text>
+            </View>
+
+            <Animated.ScrollView
+                contentContainerStyle={{
+                    height: data.length * ROW_HEIGHT + LIST_MARGIN,
+                    paddingBottom: 100 // ensure footer space
+                }}
+                showsVerticalScrollIndicator={false}
+            >
+                <View style={{ marginTop: LIST_MARGIN, height: data.length * ROW_HEIGHT }}>
+                    {data.map((id, index) => (
+                        <DraggableRow
+                            key={id}
+                            id={id}
+                            index={index}
+                            data={data}
+                            sharedData={sharedData}
+                            positions={positions}
+                            theme={theme}
+                            onPress={handlePress}
+                            onDelete={handleDelete}
+                            onDragEnd={handleDragEnd}
+                        />
+                    ))}
+                </View>
+            </Animated.ScrollView>
+        </View>
+    );
+}
+
+/* -------------------------------------------------------------------------- */
+/*  STYLES                                                                    */
+/* -------------------------------------------------------------------------- */
+
+const styles = StyleSheet.create({
+    container: { flex: 1, paddingTop: 42 },
+    header: { paddingHorizontal: 20, marginBottom: 24 },
+    headerTitle: { fontSize: 32, fontWeight: '800' },
+
+    timelineItem: {
+        flexDirection: 'row',
+        marginBottom: 16,
+        paddingHorizontal: 20,
+    },
+
+    timelineConnector: {
+        width: 30,
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginRight: 10,
+    },
+
+    timelineNode: {
+        width: 24,
+        height: 24,
+        borderRadius: 12,
+        alignItems: 'center',
+        justifyContent: 'center',
+        borderWidth: 3,
+    },
+
+    timelineNumber: {
+        color: 'white',
+        fontSize: 12,
+        fontWeight: 'bold',
+    },
+
+    card: {
+        flex: 1,
+        flexDirection: 'row',
+        alignItems: 'center',
+        padding: 12,
+        borderRadius: 20,
+        borderWidth: 1,
+    },
+
+    image: { width: 56, height: 56, borderRadius: 14 },
+    content: { flex: 1, marginLeft: 14 },
+
+    title: { fontSize: 17, fontWeight: '700' },
+    subtitle: { fontSize: 13, flex: 1 },
+
+    locationContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 4,
+    },
+
+    categoryBadge: {
+        borderRadius: 4,
+        paddingHorizontal: 6,
+        paddingVertical: 2,
+        marginBottom: 4,
+        alignSelf: 'flex-start',
+    },
+
+    categoryText: { fontSize: 10, fontWeight: '700' },
+
+    deleteButton: { padding: 10 },
+    dragHandle: { padding: 8 },
+});

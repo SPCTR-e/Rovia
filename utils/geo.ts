@@ -132,4 +132,63 @@ export function toGeoJSONLineString(coordinates: Coordinate[]) {
     };
 }
 
+/**
+ * Calculate distance between two points in meters using Haversine formula.
+ */
+export function getDistance(coord1: Coordinate, coord2: Coordinate): number {
+    const R = 6371e3; // Earth radius in meters
+    const lat1 = (coord1.latitude * Math.PI) / 180;
+    const lat2 = (coord2.latitude * Math.PI) / 180;
+    const dLat = ((coord2.latitude - coord1.latitude) * Math.PI) / 180;
+    const dLon = ((coord2.longitude - coord1.longitude) * Math.PI) / 180;
 
+    const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+        Math.cos(lat1) * Math.cos(lat2) *
+        Math.sin(dLon / 2) * Math.sin(dLon / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+    return R * c;
+}
+
+/**
+ * Generate a GeoJSON Polygon representing a circle.
+ * @param center Center coordinate [lon, lat]
+ * @param radiusInKm Radius in kilometers (e.g., 0.4 for 400m)
+ * @param points Number of vertices in the polygon
+ */
+export function createGeoJSONCircle(center: [number, number], radiusInKm: number, points: number = 64) {
+    if (!center) return null;
+
+    const coords = {
+        latitude: center[1],
+        longitude: center[0],
+    };
+
+    const km = radiusInKm;
+
+    const ret = [];
+    const distanceX = km / (111.32 * Math.cos((coords.latitude * Math.PI) / 180));
+    const distanceY = km / 110.574;
+
+    let theta, x, y;
+    for (let i = 0; i < points; i++) {
+        theta = (i / points) * (2 * Math.PI);
+        x = distanceX * Math.cos(theta);
+        y = distanceY * Math.sin(theta);
+
+        ret.push([coords.longitude + x, coords.latitude + y]);
+    }
+    ret.push(ret[0]);
+
+    return {
+        type: "FeatureCollection",
+        features: [{
+            type: "Feature",
+            geometry: {
+                type: "Polygon",
+                coordinates: [ret],
+            },
+            properties: {},
+        }],
+    };
+}

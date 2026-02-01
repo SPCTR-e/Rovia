@@ -15,16 +15,18 @@ import Animated, {
 } from 'react-native-reanimated';
 import { ExploreContent } from './screens/ExploreContent';
 import { HomeContent } from './screens/HomeContent';
+import { ItineraryContent } from './screens/ItineraryContent';
 import { TransportContent, TransportRef } from './screens/TransportContent';
 import { IconSymbol } from './ui/icon-symbol';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
-const TAB_COUNT = 3;
+const TAB_COUNT = 4;
 
 // Memoize content components to prevent unnecessary re-renders
 const MemoizedHome = React.memo(HomeContent);
 const MemoizedExplore = React.memo(ExploreContent);
 const MemoizedTransport = React.memo(TransportContent);
+const MemoizedItinerary = React.memo(ItineraryContent);
 
 export function UnifiedTabs() {
     const router = useRouter();
@@ -54,7 +56,7 @@ export function UnifiedTabs() {
         if (index !== activeIndexRef.current) {
             setActiveIndex(index);
             activeIndexRef.current = index;
-            if (index === 2) {
+            if (index === 3) {
                 setTransportLoaded(true);
             }
         }
@@ -71,7 +73,7 @@ export function UnifiedTabs() {
     }, [translateX, updateActiveTab]);
 
     const navigateTo = React.useCallback((path: string, cat?: string) => {
-        const index = path === '/' ? 0 : path === '/explore' ? 1 : path === '/transport' ? 2 : 0;
+        const index = path === '/' ? 0 : path === '/explore' ? 1 : path === '/itinerary' ? 2 : path === '/transport' ? 3 : 0;
 
         if (index !== activeIndexRef.current) {
             translateX.value = withSpring(-index * SCREEN_WIDTH, {
@@ -235,8 +237,11 @@ export function UnifiedTabs() {
                             <MemoizedExplore key={`explore-${locale}`} category={category} setCategory={setCategory} />
                         </View>
                         <View style={{ width: SCREEN_WIDTH }}>
+                            <MemoizedItinerary key={`itinerary-${locale}`} onNavigate={navigateTo} />
+                        </View>
+                        <View style={{ width: SCREEN_WIDTH }}>
                             {/* Only lazy load Transport (Map) as it's the heaviest component, then keep alive */}
-                            {activeIndex === 2 || transportLoaded ? <MemoizedTransport key={`transport-${locale}`} ref={transportRef} /> : <View style={{ flex: 1 }} />}
+                            {activeIndex === 3 || transportLoaded ? <MemoizedTransport key={`transport-${locale}`} ref={transportRef} /> : <View style={{ flex: 1 }} />}
                         </View>
                     </Animated.View>
                 </GestureDetector>
@@ -285,7 +290,8 @@ export function UnifiedTabs() {
                 }]}>
                     {renderTabItem(0, 'house.fill', i18n.t('home'))}
                     {renderTabItem(1, 'paperplane.fill', i18n.t('explore'))}
-                    {renderTabItem(2, 'tram.fill', i18n.t('transport'))}
+                    {renderTabItem(2, 'list.bullet.rectangle.portrait.fill', 'Plan')}
+                    {renderTabItem(3, 'map.fill', i18n.t('map'))}
                 </View>
             </GestureHandlerRootView>
         </View>

@@ -43,6 +43,17 @@ const MAPPING = {
   'sparkles': 'auto-awesome',
   'mappin.and.ellipse': 'place',
   'suit.heart.fill': 'favorite',
+  'checkmark.circle.fill': 'check-circle',
+  'circle': 'radio-button-unchecked',
+  // Missing Icons
+  'line.3.horizontal': 'menu',
+  'location.north.circle': 'explore',
+  'magnifyingglass': 'search',
+  'square.stack.3d.up': 'layers', // Backwards compatibility if needed
+  'safari': 'explore', // Backwards compatibility
+  'trash.fill': 'delete',
+  'list.bullet.rectangle.portrait.fill': 'list',
+  'plus': 'add',
 } as IconMapping;
 
 /**

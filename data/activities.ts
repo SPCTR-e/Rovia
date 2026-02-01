@@ -38,15 +38,10 @@ export const ACTIVITIES = [
                 shortDescription: 'Город с ракурса реки Иль.',
                 location: 'Place du Marché aux Poissons'
             },
-            zh: {
-                name: 'Batorama 游船之旅',
-                shortDescription: '从伊尔河的视角欣赏城市。',
-                location: '鱼市广场'
-            },
-            ja: {
-                name: 'バトラマ運河クルーズ',
-                shortDescription: 'イル川からの視点で街を眺める。',
-                location: '魚市場広場'
+            pt: {
+                name: 'Batorama Passeio de Barco',
+                shortDescription: 'A cidade vista do rio Ill.',
+                location: 'Place du Marché aux Poissons'
             }
         }
     },
@@ -89,15 +84,10 @@ export const ACTIVITIES = [
                 shortDescription: 'Панорамный вид с высоты 66 метров.',
                 location: 'Pl. de la Cathédrale'
             },
-            zh: {
-                name: '大教堂平台',
-                shortDescription: '从 66 米高处俯瞰全景。',
-                location: '大教堂广场'
-            },
-            ja: {
-                name: '大聖堂プラットフォーム',
-                shortDescription: '高さ66メートルからのパノラマビュー。',
-                location: 'カテドラル広場'
+            pt: {
+                name: 'Plataforma da Catedral',
+                shortDescription: 'Vistas panorâmicas de 66 metros de altura.',
+                location: 'Place de la Cathédrale'
             }
         }
     },
@@ -134,6 +124,70 @@ export const ACTIVITIES = [
                 name: 'Cantina Storica degli Ospizi',
                 shortDescription: 'Visita la botte del 1395 nell\'Ospedale.',
                 location: 'Hôpital Civil'
+            },
+            ru: {
+                name: 'Исторический винный погреб',
+                shortDescription: 'Посетите бочку 1395 года в больнице.',
+                location: 'Hôpital Civil'
+            },
+            pt: {
+                name: 'Adega Histórica dos Hospícios',
+                shortDescription: 'Visite o barril de 1395 no Hospital.',
+                location: 'Hôpital Civil'
+            }
+        }
+    },
+    {
+        id: 'cinema-vox',
+        name: "Cinema Vox",
+        shortDescription: "Located in a historic building in the city center, offering modern films.",
+        description: "Located in the heart of the city within a historic building, this cinema features seven screens showing the latest film releases in both French and original versions.",
+        image: require('@/assets/images/sights/cathedral.jpg'), // Placeholder
+        category: 'activities',
+        location: "17 Rue des Francs-Bourgeois",
+        coordinates: { latitude: 48.5817466320027, longitude: 7.74639246042351 },
+        translations: {
+            fr: {
+                name: "Cinéma Vox",
+                shortDescription: "Ce cinéma installé au coeur de la ville dans un immeuble historique, comprend...",
+                description: "Ce cinéma installé au coeur de la ville dans un immeuble historique, comprend sept salles qui proposent l'essentiel de la production cinématographique récente en version française ou version originale.",
+                location: "17 Rue des Francs-Bourgeois"
+            },
+            de: {
+                name: "Kino Vox",
+                shortDescription: "In einem historischen Gebäude im Stadtzentrum gelegen, bietet es moderne Filme.",
+                description: "Dieses Kino befindet sich im Herzen der Stadt in einem historischen Gebäude und verfügt über sieben Säle, die die wichtigsten aktuellen Filmproduktionen in französischer oder Originalfassung zeigen.",
+                location: "17 Rue des Francs-Bourgeois"
+            },
+            es: {
+                name: "Cine Vox",
+                shortDescription: "Ubicado en un edificio histórico en el centro de la ciudad, ofrece películas modernas.",
+                description: "Situado en el corazón de la ciudad en un edificio histórico, este cine cuenta con siete salas que ofrecen lo mejor de la producción cinematográfica reciente en versión francesa o versión original.",
+                location: "17 Rue des Francs-Bourgeois"
+            },
+            it: {
+                name: "Cinema Vox",
+                shortDescription: "Situato in un edificio storico nel centro della città, offre film moderni.",
+                description: "Situato nel cuore della città in un edificio storico, questo cinema dispone di sette sale che offrono il meglio della produzione cinematografica recente in versione francese o originale.",
+                location: "17 Rue des Francs-Bourgeois"
+            },
+            ru: {
+                name: "Кинотеатр Vox",
+                shortDescription: "Расположенный в историческом здании в центре города, он предлагает современные фильмы.",
+                description: "Этот кинотеатр, расположенный в самом сердце города в историческом здании, располагает семью залами, где демонстрируются лучшие новинки кинопроизводства на французском языке или в оригинальной версии.",
+                location: "17 Rue des Francs-Bourgeois"
+            },
+            pt: {
+                name: "Cinema Vox",
+                shortDescription: "Localizado num edifício histórico no centro da cidade, oferece filmes modernos.",
+                description: "Localizado no coração da cidade num edifício histórico, este cinema dispõe de sete salas que oferecem o melhor da produção cinematográfica recente em versão francesa ou original.",
+                location: "17 Rue des Francs-Bourgeois"
+            },
+            tr: {
+                name: "Vox Sineması",
+                shortDescription: "Şehir merkezinde tarihi bir binada yer alan, modern filmler sunan sinema.",
+                description: "Şehrin kalbinde, tarihi bir binada yer alan bu sinema, Fransızca veya orijinal versiyonlarında en yeni film yapımlarını sunan yedi salona sahiptir.",
+                location: "17 Rue des Francs-Bourgeois"
             }
         }
     }

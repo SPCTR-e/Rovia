@@ -40,6 +40,18 @@ export const RESTAURANTS = [
                 shortDescription: 'Atmosfera vivace e alla moda in un\'ex banca.',
                 description: 'Questo posto è perfetto se desideri un\'atmosfera vivace e di tendenza. È ospitato in un\'ex banca con soffitti alti e un arredamento vintage ed eclettico.',
                 location: '24 Rue du Vieux-Marché-aux-Vins'
+            },
+            ru: {
+                name: 'The Drunky Stork Social Club',
+                shortDescription: 'Оживленная, модная атмосфера в здании бывшего банка.',
+                description: 'Это место идеально подходит, если вы ищете оживленную и модную атмосферу. Оно расположено в здании бывшего банка с высокими потолками и винтажным, эклектичным декором, который создает ощущение "лондонского паба с эльзасским шиком".',
+                location: '24 Rue du Vieux-Marché-aux-Vins'
+            },
+            pt: {
+                name: 'The Drunky Stork Social Club',
+                shortDescription: 'Ambiente animado e moderno num antigo banco.',
+                description: 'Este local é perfeito se procura uma atmosfera animada e moderna. Está instalado num antigo banco com tetos altos e uma decoração vintage e eclética que parece uma mistura de "pub londrino com chique alsaciano".',
+                location: '24 Rue du Vieux-Marché-aux-Vins'
             }
         }
     },
@@ -82,6 +94,18 @@ export const RESTAURANTS = [
                 name: 'Madame Julia',
                 shortDescription: 'Favorito per il brunch in stile accogliente caffetteria.',
                 description: 'Per un brunch più rilassato, in stile "coffee shop", questo è uno dei preferiti dai locali. Sembra un accogliente soggiorno.',
+                location: '34 Rue de la Première Armée'
+            },
+            ru: {
+                name: 'Madame Julia',
+                shortDescription: 'Уютная кофейня, любимое место для бранча.',
+                description: 'Для более расслабленного бранча в стиле "кофейни" это любимое место местных жителей. Кирпичные стены и удобные кресла создают ощущение уютной гостиной, что идеально подходит для неторопливого утра.',
+                location: '34 Rue de la Première Armée'
+            },
+            pt: {
+                name: 'Madame Julia',
+                shortDescription: 'Café acolhedor e favorito para brunch.',
+                description: 'Para um brunch mais descontraído, ao estilo "coffee shop", este é um favorito local. Parece uma sala de estar acolhedora com as suas paredes de tijolo e assentos confortáveis, tornando-o ideal para uma manhã tranquila.',
                 location: '34 Rue de la Première Armée'
             }
         }
@@ -126,6 +150,18 @@ export const RESTAURANTS = [
                 shortDescription: 'Brunch vegetariano e leggendaria cioccolata calda.',
                 description: 'Una fantastica opzione se ami il cibo vegetariano di alta qualità. Situato vicino alla cattedrale.',
                 location: '8 rue de la Râpe'
+            },
+            ru: {
+                name: 'Bistrot & Chocolat',
+                shortDescription: 'Вегетарианский бранч и легендарный горячий шоколад.',
+                description: 'Фантастический вариант, если у вас есть диетические ограничения или вы просто любите качественную вегетарианскую еду. Расположенный рядом с собором, он доказывает, что эльзасская кухня без мяса может быть вкусной.',
+                location: '8 rue de la Râpe'
+            },
+            pt: {
+                name: 'Bistrot & Chocolat',
+                shortDescription: 'Brunch vegetariano e chocolate quente lendário.',
+                description: 'Uma opção fantástica se tiver restrições dietéticas ou simplesmente adorar comida vegetariana de alta qualidade. Localizado perto da catedral, prova que a comida alsaciana sem carne pode ser deliciosa.',
+                location: '8 rue de la Râpe'
             }
         }
     },
@@ -169,6 +205,18 @@ export const RESTAURANTS = [
                 name: 'Restaurant Au Pont Corbeau',
                 shortDescription: 'Uno dei Winstub più autentici per i locali.',
                 description: 'Questo è ampiamente considerato dai locali come uno dei Winstub più autentici della città.',
+                location: '21 Quai Saint-Nicolas'
+            },
+            ru: {
+                name: 'Restaurant Au Pont Corbeau',
+                shortDescription: 'Один из самых аутентичных винстубов для местных.',
+                description: 'Местные жители считают это место одним из самых аутентичных винстубов в городе. Здесь нет ощущения "туристической ловушки", характерного для некоторых других мест в центре, и основное внимание уделяется качеству.',
+                location: '21 Quai Saint-Nicolas'
+            },
+            pt: {
+                name: 'Restaurant Au Pont Corbeau',
+                shortDescription: 'Um dos Winstubs mais autênticos para os locais.',
+                description: 'Este é amplamente considerado pelos locais como um dos Winstubs mais autênticos da cidade. Evita a sensação de "armadilha para turistas" de outros locais centrais e concentra-se puramente na qualidade.',
                 location: '21 Quai Saint-Nicolas'
             }
         }
@@ -215,6 +263,18 @@ export const RESTAURANTS = [
                 shortDescription: 'Incantevole ristorante tradizionale vicino alla cattedrale.',
                 description: 'Situato in una posizione privilegiata vicino alla cattedrale, questo ristorante mantiene elevati standard per la cucina tradizionale.',
                 location: '5 Rue des Tailleurs de Pierre'
+            },
+            ru: {
+                name: 'Le Tire-Bouchon',
+                shortDescription: 'Очаровательный традиционный ресторан рядом с собором.',
+                description: 'Расположенный в престижном месте рядом с собором, этот ресторан остается доступным, сохраняя при этом высокие стандарты традиционной кухни.',
+                location: '5 Rue des Tailleurs de Pierre'
+            },
+            pt: {
+                name: 'Le Tire-Bouchon',
+                shortDescription: 'Restaurante tradicional encantador perto da catedral.',
+                description: 'Localizado numa zona privilegiada perto da catedral, este restaurante consegue ser acessível mantendo altos padrões para a cozinha tradicional.',
+                location: '5 Rue des Tailleurs de Pierre'
             }
         }
     },
@@ -260,6 +320,18 @@ export const RESTAURANTS = [
                 shortDescription: 'Cena in un monumento storico d\'eccellenza.',
                 description: 'Costruito nel 1427, l\'edificio stesso è un capolavoro dell\'architettura gotica e probabilmente la casa più bella della città.',
                 location: '16 Place de la Cathédrale'
+            },
+            ru: {
+                name: 'Maison Kammerzell',
+                shortDescription: 'Ужин в историческом памятнике.',
+                description: 'Нельзя говорить об исторических ресторанах Страсбурга без упоминания этого места. Здание, построенное в 1427 году, само по себе является шедевром готической архитектуры и, пожалуй, самым красивым домом в городе.',
+                location: '16 Place de la Cathédrale'
+            },
+            pt: {
+                name: 'Maison Kammerzell',
+                shortDescription: 'Jantar num monumento histórico de excelência.',
+                description: 'Não se pode falar de jantares históricos em Estrasburgo sem este lugar. Construído em 1427, o edifício em si é uma obra-prima da arquitetura gótica e possivelmente a casa mais bonita da cidade.',
+                location: '16 Place de la Cathédrale'
             }
         }
     },
@@ -303,6 +375,18 @@ export const RESTAURANTS = [
                 name: 'Ristorante La Petite Alsace',
                 shortDescription: 'Fascino da cartolina nella Petite France.',
                 description: 'Nel cuore del pittoresco quartiere di Petite France, questo ristorante è un esempio perfetto di fascino alsaziano.',
+                location: '23 Rue du Bain-aux-Plantes'
+            },
+            ru: {
+                name: 'Restaurant La Petite Alsace',
+                shortDescription: 'Очарование как с открытки в районе Маленькая Франция.',
+                description: 'Этот ресторан, расположенный в самом сердце живописного района Маленькая Франция, является идеальным примером эльзасского шарма с его фахверковым фасадом и красными клетчатыми скатертями. Это идеальное место, чтобы насладиться щедрыми классическими блюдами, такими как шукрут гарни или бекеоффе, в деревенской, аутентичной обстановке, которая по-настоящему дышит местными традициями.',
+                location: '23 Rue du Bain-aux-Plantes'
+            },
+            pt: {
+                name: 'Restaurant La Petite Alsace',
+                shortDescription: 'Charme de cartão postal na Petite France.',
+                description: 'Aninhado no coração do pitoresco bairro de Petite France, este restaurante é um exemplo perfeito do charme alsaciano com a sua fachada em enxaimel e toalhas de mesa aos quadrados vermelhos. É o local ideal para desfrutar de clássicos generosos como choucroute garnie ou baeckeoffe num ambiente rústico e autêntico que respira verdadeiramente a tradição local.',
                 location: '23 Rue du Bain-aux-Plantes'
             }
         }
@@ -349,6 +433,18 @@ export const RESTAURANTS = [
                 shortDescription: 'Arredamento retrò-chic e favorito dai locali.',
                 description: 'Questo locale si distingue per il suo arredamento retrò-chic. Uno dei preferiti dai locali per gustare eccellenti tartes flambées.',
                 location: '15 Rue des Serruriers'
+            },
+            ru: {
+                name: 'Brasserie Le Vintage',
+                shortDescription: 'Ретро-шик декор и любимое место местных.',
+                description: 'Это заведение выделяется своим декором в стиле ретро-шик и теплой атмосферой, которая балансирует между интимной и непринужденной. Любимое место местных жителей, это идеальное место, чтобы отведать превосходные тарт фламбе с тонкой, хрустящей корочкой или насладиться разнообразным меню брассери в изысканной обстановке.',
+                location: '15 Rue des Serruriers'
+            },
+            pt: {
+                name: 'Brasserie Le Vintage',
+                shortDescription: 'Decoração retro-chic e favorito local.',
+                description: 'Este estabelecimento destaca-se pela sua decoração retro-chic e atmosfera acolhedora que equilibra o íntimo e o descontraído. Um favorito entre os habitantes locais, é o lugar perfeito para saborear excelentes tartes flambées com massas finas e estaladiças ou desfrutar de um menu variado de brasserie num ambiente requintado.',
+                location: '15 Rue des Serruriers'
             }
         }
     },
@@ -393,6 +489,18 @@ export const RESTAURANTS = [
                 name: 'La Hache',
                 shortDescription: 'Elegante bistrot con raffinata cucina di mercato.',
                 description: 'Questo elegante bistrot offre una raffinata cucina di mercato in un ambiente vivace ed elegante.',
+                location: '11 Rue de la Douane'
+            },
+            ru: {
+                name: 'La Hache',
+                shortDescription: 'Элегантное бистро с изысканной рыночной кухней.',
+                description: 'Это элегантное бистро, расположенное недалеко от Старой таможни (Ancienne Douane), предлагает изысканную рыночную кухню в оживленной и стильной обстановке. В отличие от деревенской атмосферы традиционных винстубов, люди приходят сюда за переосмысленными "простыми" блюдами, такими как жареный костный мозг, паштет в тесте или премиальные куски говядины, что делает его идеальным для современного гурманского ужина.',
+                location: '11 Rue de la Douane'
+            },
+            pt: {
+                name: 'La Hache',
+                shortDescription: 'Bistrô elegante com cozinha de mercado refinada.',
+                description: 'Este bistrô elegante, situado perto da Antiga Alfândega (Ancienne Douane), oferece cozinha de mercado refinada num ambiente animado e elegante. Longe da vibração rústica dos Winstubs tradicionais, as pessoas vêm aqui para pratos "canaille" revisitados como medula óssea assada, pâté en croûte ou cortes premium de carne bovina, tornando-o perfeito para uma refeição moderna e gourmet.',
                 location: '11 Rue de la Douane'
             }
         }
@@ -439,6 +547,18 @@ export const RESTAURANTS = [
                 shortDescription: 'Tempio della gastronomia alsaziana del XVI secolo.',
                 description: 'Situato in un magnifico edificio vincolato del XVI secolo a pochi passi dalla cattedrale.',
                 location: '11 Rue du Maroquin'
+            },
+            ru: {
+                name: 'Le Gruber',
+                shortDescription: 'Храм эльзасской гастрономии XVI века.',
+                description: 'Расположенный в великолепном историческом здании XVI века всего в нескольких шагах от собора, Le Gruber впечатляет своим масштабом и декором, наполненным картинами и старинными предметами. Это настоящий храм эльзасской гастрономии, где вы можете насладиться типичными блюдами в обстановке, которая буквально погружает вас в историю Страсбурга.',
+                location: '11 Rue du Maroquin'
+            },
+            pt: {
+                name: 'Le Gruber',
+                shortDescription: 'Templo da gastronomia alsaciana do século XVI.',
+                description: 'Instalado num magnífico edifício classificado do século XVI, a poucos passos da catedral, o Le Gruber impressiona pela sua dimensão e decoração repleta de pinturas e objetos de época. É um verdadeiro templo da gastronomia alsaciana onde se pode desfrutar de pratos típicos num cenário que mergulha literalmente na história de Estrasburgo.',
+                location: '11 Rue du Maroquin'
             }
         }
     },
@@ -482,6 +602,18 @@ export const RESTAURANTS = [
                 name: 'Au Brasseur',
                 shortDescription: 'Microbirrificio artigianale con atmosfera vivace.',
                 description: 'Questo microbirrificio artigianale è il posto giusto per una serata vivace e conviviale con gli amici.',
+                location: '22 Rue des Veaux'
+            },
+            ru: {
+                name: 'Au Brasseur',
+                shortDescription: 'Ремесленная мини-пивоварня с живой атмосферой.',
+                description: 'Эта ремесленная мини-пивоварня — лучшее место для веселого и дружеского вечера с друзьями. Известная своим домашним пивом и непревзойденными ценами на тарт фламбе (особенно во время "счастливого часа"), атмосфера здесь всегда праздничная, шумная и аутентично страсбургская.',
+                location: '22 Rue des Veaux'
+            },
+            pt: {
+                name: 'Au Brasseur',
+                shortDescription: 'Microcervejaria artesanal com atmosfera animada.',
+                description: 'Esta microcervejaria artesanal é o local ideal para uma noite animada e de convívio com amigos. Famosa pelas suas cervejas caseiras e preços imbatíveis em tartes flambées (especialmente durante o Happy Hour), a atmosfera é sempre festiva, barulhenta e autenticamente de Estrasburgo.',
                 location: '22 Rue des Veaux'
             }
         }
@@ -528,6 +660,18 @@ export const RESTAURANTS = [
                 shortDescription: 'Sapori ricchi e colorati mezze libanesi.',
                 description: 'Rinomato come uno dei migliori indirizzi libanesi della città, questo ristorante offre una vera fuga culinaria.',
                 location: '1 Rue du Saint-Gothard'
+            },
+            ru: {
+                name: 'Au Cèdre',
+                shortDescription: 'Богатые вкусы и красочные ливанские мезе.',
+                description: 'Известный как один из лучших ливанских адресов в городе, этот ресторан предлагает настоящий кулинарный побег с его красочными и ароматными мезе. Обстановка гостеприимная, а обслуживание внимательное, что делает его идеальным местом, чтобы разделить множество маленьких горячих и холодных блюд и открыть для себя богатые вкусы Леванта.',
+                location: '1 Rue du Saint-Gothard'
+            },
+            pt: {
+                name: 'Au Cèdre',
+                shortDescription: 'Sabores ricos e mezze libaneses coloridos.',
+                description: 'Reconhecido como um dos melhores endereços libaneses da cidade, este restaurante oferece uma verdadeira fuga culinária com os seus mezze coloridos e perfumados. O ambiente é acolhedor e o serviço atencioso, tornando-o o local perfeito para partilhar numerosos pequenos pratos quentes e frios e descobrir os ricos sabores do Levante.',
+                location: '1 Rue du Saint-Gothard'
             }
         }
     },
@@ -571,6 +715,18 @@ export const RESTAURANTS = [
                 name: 'East Canteen',
                 shortDescription: 'Mensa trendy di street food asiatico.',
                 description: 'Con il suo arredamento moderno e coinvolgente, questo locale è una mensa asiatica alla moda che esplora lo street food di tutto il continente.',
+                location: '2 Pl. des Orphelins'
+            },
+            ru: {
+                name: 'East Canteen',
+                shortDescription: 'Модная столовая азиатской уличной еды.',
+                description: 'С его современным и захватывающим декором, это заведение представляет собой модную азиатскую столовую, которая исследует уличную еду со всего континента. От гёдза и бао до блюд из лапши на воке — это идеальный адрес для непринужденной, быстрой еды, полной экзотических вкусов, в молодой и динамичной атмосфере.',
+                location: '2 Pl. des Orphelins'
+            },
+            pt: {
+                name: 'East Canteen',
+                shortDescription: 'Cantina de comida de rua asiática moderna.',
+                description: 'Com a sua decoração moderna e imersiva, este estabelecimento é uma cantina asiática moderna que explora a comida de rua de todo o continente. De Gyozas e Baos a pratos de noodles salteados, é o endereço ideal para uma refeição casual e rápida cheia de sabores exóticos numa atmosfera jovem e dinâmica.',
                 location: '2 Pl. des Orphelins'
             }
         }
@@ -617,6 +773,18 @@ export const RESTAURANTS = [
                 shortDescription: 'Confortanti specialità armene e georgiane.',
                 description: 'Questo ristorante è una perla rara che ti trasporta nel Caucaso con le sue specialità armene e georgiane.',
                 location: '5 Rue du Faubourg-de-Saverne'
+            },
+            ru: {
+                name: 'AYGUI',
+                shortDescription: 'Утешительные армянские и грузинские блюда.',
+                description: 'Этот ресторан — редкая жемчужина, которая перенесет вас на Кавказ благодаря своим армянским и грузинским блюдам. В уютной и захватывающей обстановке вы можете насладиться такими утешительными блюдами, как хачапури (хлеб с сыром) или хинкали (гигантские пельмени), предлагая уникальное и теплое кулинарное открытие.',
+                location: '5 Rue du Faubourg-de-Saverne'
+            },
+            pt: {
+                name: 'AYGUI',
+                shortDescription: 'Especialidades arménias e georgianas reconfortantes.',
+                description: 'Este restaurante é uma joia rara que o transporta para o Cáucaso com as suas especialidades arménias e georgianas. Num ambiente acolhedor e imersivo, pode desfrutar de pratos reconfortantes como Khachapuri (pão recheado com queijo) ou Khinkali (bolinhos gigantes), oferecendo uma descoberta culinária única e calorosa.',
+                location: '5 Rue du Faubourg-de-Saverne'
             }
         }
     },
@@ -661,6 +829,18 @@ export const RESTAURANTS = [
                 name: 'Cinnamon',
                 shortDescription: 'Raffinati e moderni curry aromatici indiani.',
                 description: 'Situato vicino al quartiere Krutenau, Cinnamon rivisita la cucina indiana con un tocco di modernità.',
+                location: '15 Rue de la Division Leclerc'
+            },
+            ru: {
+                name: 'Cinnamon',
+                shortDescription: 'Изысканные современные индийские ароматные карри.',
+                description: 'Расположенный недалеко от района Крутено, Cinnamon переосмысливает индийскую кухню с оттенком современности и элегантности. Уходя от обычных клише, ресторан подает изысканные, ароматные карри и мастерски приготовленные блюда тандури, все это представлено в современной и стильной обстановке, которая привлекает взыскательную клиентуру.',
+                location: '15 Rue de la Division Leclerc'
+            },
+            pt: {
+                name: 'Cinnamon',
+                shortDescription: 'Caris aromáticos indianos modernos e refinados.',
+                description: 'Localizado perto do bairro de Krutenau, o Cinnamon revisita a cozinha indiana com um toque de modernidade e elegância. Afastando-se dos clichés habituais, o restaurante serve caris refinados e aromáticos e grelhados tandoori magistrais, tudo apresentado num ambiente contemporâneo e elegante que agrada a uma clientela exigente.',
                 location: '15 Rue de la Division Leclerc'
             }
         }

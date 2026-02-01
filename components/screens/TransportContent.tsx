@@ -1,27 +1,105 @@
 import { ParkingList } from '@/components/ParkingList';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { Colors } from '@/constants/theme';
+import { ACTIVITIES } from '@/data/activities';
+import { CATEGORIES } from '@/data/categories';
+import { MUSEUMS } from '@/data/museums';
+import { RESTAURANTS } from '@/data/restaurants';
+import { SIGHTS } from '@/data/sights';
 import { TRANSPORT_LINES } from '@/data/transport_data_generated';
 import { TRANSPORT_STOPS } from '@/data/transport_stops'; // Updated import
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { ParkingData, useParkingData } from '@/hooks/useParkingData';
-import i18n from '@/i18n';
-import { offsetPolyline, toGeoJSONLineString } from '@/utils/geo';
+import i18n, { tData } from '@/i18n';
+
+import { ctsService, VehicleJourney } from '@/utils/cts';
+import { createGeoJSONCircle, getDistance } from '@/utils/geo';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import Mapbox from '@rnmapbox/maps';
-import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { Dimensions, Linking, Modal, Platform, Pressable, Animated as RNAnimated, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import Animated, { Easing, FadeInDown, LinearTransition, SlideInDown, SlideOutDown, runOnJS, useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { useFocusEffect, useRouter } from 'expo-router';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { BackHandler, Dimensions, Image, Linking, Modal, Platform, Pressable, Animated as RNAnimated, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import Animated, { Easing, FadeInDown, FadeOutDown, LinearTransition, runOnJS, SlideInDown, SlideInLeft, SlideOutDown, SlideOutLeft, useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { GuideContent } from './GuideContent';
 
 // --- Constants ---
 const MAPBOX_TOKEN = 'pk.eyJ1Ijoic3BlY3RydWgiLCJhIjoiY21rNG5sNmh3MDF6NjNkczl5cGM3Ynl2aSJ9.U3vf9ao95WB7Xxx4n2Ihug';
 Mapbox.setAccessToken(MAPBOX_TOKEN);
 
-const CITY_CENTER = [7.74553, 48.58392]; // [Lon, Lat] for Mapbox
+const CITY_CENTER = [7.74894, 48.58177]; // [Lon, Lat] for Mapbox
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
-const INITIAL_ZOOM = 11.5;
+const INITIAL_ZOOM = 13.0;
+
+const CLOSED_STOP_NAMES = [
+    "Langstross/Grand Rue",
+    "Broglie",
+    "Alt Winmärik-Vieux Marché aux Vins"
+];
+
+
+
+// --- Helpers ---
+const getCategoryColor = (type: string) => {
+    return CATEGORIES.find(c => c.nameKey === type)?.color || '#888';
+};
+
+const getCategoryIcon = (type: string) => {
+    switch (type) {
+        case 'sights': return 'star.fill';
+        case 'restaurants': return 'fork.knife';
+        case 'museums': return 'building.columns.fill';
+        case 'activities': return 'figure.walk';
+        default: return 'map.fill';
+    }
+};
+
+// --- Poi Marker Component ---
+const PoiMarker = React.memo(({ item, nearestStop, onPress, isSelected, theme }: any) => {
+    const scaleAnim = useRef(new RNAnimated.Value(1)).current;
+
+    useEffect(() => {
+        RNAnimated.spring(scaleAnim, {
+            toValue: isSelected ? 1.2 : 1,
+            friction: 5,
+            tension: 40,
+            useNativeDriver: true,
+        }).start();
+    }, [isSelected]);
+
+    return (
+        <Mapbox.PointAnnotation
+            id={`poi-${item.id}`}
+            coordinate={[item.coordinates.longitude, item.coordinates.latitude]}
+            onSelected={() => onPress(item)}
+        >
+            <RNAnimated.View style={{ alignItems: 'center', justifyContent: 'center', padding: 16, transform: [{ scale: scaleAnim }], zIndex: isSelected ? 999 : 10 }}>
+                {/* Main Icon */}
+                <View style={[styles.poiMarkerBody, { backgroundColor: getCategoryColor(item.type) }]}>
+                    <IconSymbol name={getCategoryIcon(item.type)} size={14} color="#FFF" />
+                </View>
+
+                {/* Badge Container - Absolute positioned to corner */}
+                {nearestStop && nearestStop.lines && (
+                    <View style={styles.poiBadgeContainer}>
+                        {nearestStop.lines.slice(0, 3).map((line: string, idx: number) => {
+                            // Find color
+                            const lineData = TRANSPORT_LINES.find(l => l.id.endsWith(line));
+                            // Default to CTS blue/gray if not found, but usually main lines have colors
+                            const color = lineData?.color || '#333';
+
+                            return (
+                                <View key={idx} style={[styles.poiBadge, { backgroundColor: color }]}>
+                                    <Text style={styles.poiBadgeText}>{line}</Text>
+                                </View>
+                            );
+                        })}
+                    </View>
+                )}
+            </RNAnimated.View>
+        </Mapbox.PointAnnotation>
+    );
+});
 
 // --- Parking Marker Component ---
 const ParkingMapMarker = ({ item, isFocused, onSelect, theme }: { item: ParkingData, isFocused: boolean, onSelect: () => void, theme: any }) => {
@@ -68,24 +146,253 @@ const ParkingMapMarker = ({ item, isFocused, onSelect, theme }: { item: ParkingD
     );
 };
 
+// --- Layers Menu Component ---
+const LayersMenu = ({ visible, onClose, layers, toggleLayer, theme, isSeasonalMode, toggleSeasonal }: any) => {
+    // Handle Android Back Button / Edge Swipe
+    useEffect(() => {
+        const onBackPress = () => {
+            if (visible) {
+                onClose();
+                return true; // Prevent default
+            }
+            return false;
+        };
+
+        const subscription = BackHandler.addEventListener('hardwareBackPress', onBackPress);
+        return () => subscription.remove();
+    }, [visible, onClose]);
+
+    if (!visible) return null;
+
+    return (
+        <Pressable style={styles.layersBackdrop} onPress={onClose}>
+            <Animated.View
+                entering={FadeInDown.duration(200)}
+                style={[styles.layersMenu, { backgroundColor: theme.cardBackground }]}
+                onStartShouldSetResponder={() => true}
+            >
+                <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+                    <Text style={[styles.layersTitle, { marginBottom: 0, color: theme.text }]}>Map Layers</Text>
+                    <TouchableOpacity onPress={onClose} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
+                        <IconSymbol name="xmark.circle.fill" size={24} color={theme.textSecondary} />
+                    </TouchableOpacity>
+                </View>
+
+                <Text style={[styles.layersSection, { color: theme.textSecondary }]}>ESSENTIALS (Recommended)</Text>
+
+
+
+                <TouchableOpacity style={styles.layerRow} onPress={() => toggleLayer('mainLines')}>
+                    <IconSymbol name={layers.mainLines ? "checkmark.circle.fill" : "circle"} size={22} color={layers.mainLines ? theme.primary : theme.textSecondary} />
+                    <View>
+                        <Text style={[styles.layerText, { color: theme.text }]}>Main Lines (Tram & Rapid)</Text>
+
+                    </View>
+                </TouchableOpacity>
+
+                <View style={[styles.divider, { backgroundColor: theme.border }]} />
+
+
+
+                <Text style={[styles.layersSection, { color: theme.textSecondary }]}>SEASONAL</Text>
+
+                <TouchableOpacity style={styles.layerRow} onPress={toggleSeasonal}>
+                    <IconSymbol name={isSeasonalMode ? "checkmark.circle.fill" : "circle"} size={22} color={isSeasonalMode ? theme.primary : theme.textSecondary} />
+                    <View>
+                        <Text style={[styles.layerText, { color: theme.text }]}>Christmas Mode</Text>
+                        <Text style={[styles.layerSubtext, { color: theme.textSecondary }]}>Hide closed stops nearby markets</Text>
+                    </View>
+                </TouchableOpacity>
+            </Animated.View >
+        </Pressable >
+    );
+};
+
 export interface TransportRef {
     openMap: () => void;
 }
 
 export const TransportContent = React.memo(React.forwardRef<TransportRef>((props, ref) => {
+    const router = useRouter();
     const colorScheme = useColorScheme();
     const theme = Colors[colorScheme ?? 'light'];
+    const insets = useSafeAreaInsets();
 
     // Parking Data
     const { data: parkingData, loading: parkingLoading, error: parkingError, refetch: refetchParking, lastUpdated } = useParkingData();
 
     // Animation State
     const [isMapFullscreen, setIsMapFullscreen] = useState(false);
+    const [initialZoomDone, setInitialZoomDone] = useState(false); // Entry animation state
+    const [isMapClosing, setIsMapClosing] = useState(false); // Exit animation state
     const [isParkingMapVisible, setIsParkingMapVisible] = useState(false);
 
     const [selectedLineId, setSelectedLineId] = useState<string | null>(null);
     const [selectedParking, setSelectedParking] = useState<ParkingData | null>(null);
     const [selectedStop, setSelectedStop] = useState<any | null>(null); // New State for Stop
+    const [allArrivals, setAllArrivals] = useState<VehicleJourney[]>([]);
+    const [arrivalsLoading, setArrivalsLoading] = useState(false);
+    const [fetchError, setFetchError] = useState<string | null>(null);
+
+    const [followingUser, setFollowingUser] = useState(false);
+
+    // Universal Map State
+    const [search, setSearch] = useState('');
+    const [mapFilter, setMapFilter] = useState('all'); // all, sights, restaurants, etc.
+    const [selectedPoi, setSelectedPoi] = useState<any | null>(null);
+    const [arrivalFilter, setArrivalFilter] = useState<string | null>(null);
+
+    // Layers State
+    const [isLayersValues, setIsLayersValues] = useState({
+        landmarks: false,
+        mainLines: true
+    });
+    const [isLayersVisible, setIsLayersVisible] = useState(false);
+    const [isSeasonalMode, setIsSeasonalMode] = useState(false);
+    const [walkRadiusGeoJSON, setWalkRadiusGeoJSON] = useState<any>(null);
+
+
+
+    const mapCamera = useRef<Mapbox.Camera>(null);
+    const parkingMapCamera = useRef<Mapbox.Camera>(null);
+    const mapView = useRef<Mapbox.MapView>(null);
+
+    // Clear Mapbox Cache on Mount
+    useEffect(() => {
+        Mapbox.clearData();
+    }, []);
+
+    // Reset state when leaving the tab (Focus Effect)
+    useFocusEffect(
+        useCallback(() => {
+            // Function runs on Focus (Entry)
+            return () => {
+                // Function runs on Blur (Exit) - FULL RESET
+                setMapFilter('all');
+                setSearch('');
+
+                // Clear all map selections
+                setSelectedPoi(null);
+                setSelectedStop(null);
+                setSelectedLineId(null);
+
+                // Clear derived state
+                setWalkRadiusGeoJSON(null);
+                setArrivalFilter(null);
+
+                // Reset layers to default (Main Lines on, Landmarks off)
+                setIsLayersValues(prev => ({
+                    ...prev,
+                    landmarks: false,
+                    mainLines: true, // Ensure main lines are visible by default
+                    buses: false
+                }));
+            };
+        }, [])
+    );
+
+    // --- Unified POI Logic ---
+    const allItems = useMemo(() => [
+        ...(SIGHTS as any[]).map(i => ({ ...i, type: 'sights' })),
+        ...(RESTAURANTS as any[]).map(i => ({ ...i, type: 'restaurants' })),
+        ...(MUSEUMS as any[]).map(i => ({ ...i, type: 'museums' })),
+        ...(ACTIVITIES as any[]).map(i => ({ ...i, type: 'activities' }))
+    ], []);
+
+    const normalize = (str: string) => str ? str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase() : "";
+
+    const checkSearchMatch = useCallback((item: any, searchInput: string) => {
+        if (!searchInput) return true;
+
+        const term = normalize(searchInput);
+        const name = normalize(tData(item, 'name'));
+        const location = normalize(tData(item, 'location'));
+
+        return name.includes(term) || location.includes(term);
+    }, []);
+
+    const poiFeatures = useMemo(() => {
+        if (!isLayersValues.landmarks) return [];
+
+        return allItems.filter(item => {
+            if (!item.coordinates) return false;
+            // Filter logic
+            if (mapFilter !== 'all' && item.type !== mapFilter) return false;
+            if (search && !checkSearchMatch(item, search)) return false;
+            return true;
+        }).map(item => {
+            // Find nearest stop logic (Task 1)
+            let nearest = null;
+            let minDst = 300; // 300m threshold as requested
+
+            // Optimization: Only check stops if we are enabling this feature? 
+            // It's fast enough for ~50 items x ~500 stops (25000 ops is tiny).
+            for (const feature of TRANSPORT_STOPS.features) {
+                const sLat = feature.geometry.coordinates[1];
+                const sLon = feature.geometry.coordinates[0];
+                const d = getDistance(
+                    { latitude: item.coordinates.latitude, longitude: item.coordinates.longitude },
+                    { latitude: sLat, longitude: sLon }
+                );
+
+                if (d < minDst) {
+                    minDst = d;
+                    // Include coordinates for Highlight action
+                    nearest = {
+                        ...feature.properties,
+                        distance: d,
+                        coordinates: feature.geometry.coordinates,
+                        // Ensure we have lines
+                        lines: feature.properties.lines || []
+                    };
+                }
+            }
+
+            return { ...item, nearestStop: nearest };
+        });
+    }, [isLayersValues.landmarks, allItems, mapFilter, search, checkSearchMatch]);
+
+
+
+
+
+    // 1. Initial Entry Animation (Zoom in from 9 to 13)
+    useEffect(() => {
+        if (isMapFullscreen && !initialZoomDone) {
+            // Wait for modal transition
+            setTimeout(() => {
+                mapCamera.current?.setCamera({
+                    centerCoordinate: CITY_CENTER,
+                    zoomLevel: INITIAL_ZOOM, // 13
+                    animationDuration: 2000,
+                    animationMode: 'flyTo'
+                });
+                setInitialZoomDone(true);
+            }, 100);
+        }
+    }, [isMapFullscreen]);
+
+    // 2. Smart Focus Logic (Only move when selecting, NEVER when deselecting)
+    useEffect(() => {
+        const target = selectedPoi || selectedStop;
+
+        if (target && target.coordinates) {
+            // Case A: User selected something -> Fly to it
+            const coords = Array.isArray(target.coordinates)
+                ? target.coordinates
+                : [target.coordinates.longitude, target.coordinates.latitude];
+
+            mapCamera.current?.setCamera({
+                centerCoordinate: coords,
+                zoomLevel: 15.5, // Good detail level
+                animationDuration: 800,
+                animationMode: 'flyTo'
+            });
+        }
+        // Case B: User selected a Line -> DO NOTHING (Let them view the whole line or their current spot)
+        // Case C: User closed a card -> DO NOTHING (Stay where they are)
+
+    }, [selectedPoi, selectedStop]); // Note: selectedLineId is deliberately excluded
 
     const [isGuideVisible, setIsGuideVisible] = useState(false);
     const modalOpacity = useSharedValue(0);
@@ -94,21 +401,143 @@ export const TransportContent = React.memo(React.forwardRef<TransportRef>((props
     // --- Transport Map Handlers ---
     const handleOpenMap = () => {
         setIsMapFullscreen(true);
+        setInitialZoomDone(false); // Reset to trigger zoom-in
+        setIsMapClosing(false); // Reset exit state
         isClosing.value = false;
         modalOpacity.value = 0;
         setTimeout(() => {
             modalOpacity.value = withTiming(1, { duration: 300 });
         }, 50);
+
+        // Trigger zoom-in animation after modal transition
+        setTimeout(() => {
+            setInitialZoomDone(true);
+        }, 10);
     };
 
     const handleCloseMap = () => {
+        setIsMapClosing(true); // Trigger UI exit animations
         isClosing.value = true;
         modalOpacity.value = withTiming(0, { duration: 300 }, () => {
             runOnJS(setIsMapFullscreen)(false);
             runOnJS(setSelectedLineId)(null);
             runOnJS(setSelectedStop)(null);
+            runOnJS(setArrivalFilter)(null); // Reset filter
+            runOnJS(setWalkRadiusGeoJSON)(null); // Clear walking radius
+            runOnJS(setAllArrivals)([]);
+            runOnJS(setSelectedPoi)(null);
+            runOnJS(setIsLayersVisible)(false);
+            runOnJS(setSearch)('');
+            runOnJS(setMapFilter)('all');
+            runOnJS(setIsLayersValues)({ landmarks: false, mainLines: true });
         });
     };
+
+
+
+    const handleResetNorth = () => {
+        mapCamera.current?.setCamera({ heading: 0, animationDuration: 500 });
+    };
+
+    const handleLocateMe = () => {
+        // 1. Clear selections that might be locking the camera
+        setSelectedStop(null);
+        setSelectedPoi(null);
+        setFollowingUser(false); // Stop tracking GPS if active
+
+        const config = {
+            centerCoordinate: CITY_CENTER,
+            zoomLevel: INITIAL_ZOOM, // 13.0
+            heading: 0, // Reset rotation too
+            pitch: 0,   // Reset tilt
+            animationDuration: 1500,
+            animationMode: 'flyTo' as const
+        };
+
+        // 2. Fly to City Center (Target both maps just in case)
+        mapCamera.current?.setCamera(config);
+        parkingMapCamera.current?.setCamera(config);
+    };
+
+    // --- Real-time Arrivals ---
+    const fetchArrivals = useCallback(async (stopName: string) => {
+        setArrivalsLoading(true);
+        setFetchError(null);
+        setAllArrivals([]);
+
+        try {
+            // 1. Get all known Stop IDs (Discovery) to handle multiple platforms
+            const discovery = await ctsService.getStopPointsDiscovery();
+
+            const normalize = (str: string) => str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z0-9]/g, '');
+            const target = normalize(stopName);
+
+            // Find ALL platforms that match this name
+            const matchedStops = discovery.filter(s => {
+                const sName = normalize(s.StopPointName);
+                return sName === target || sName.includes(target) || target.includes(sName);
+            });
+
+            if (matchedStops.length === 0) {
+                setFetchError('stopNotFound');
+                setArrivalsLoading(false);
+                return;
+            }
+
+            // 2. Poll ALL platforms safely
+            const refs = matchedStops.map(s => s.StopPointRef);
+            console.log(`[Transport] Polling ${refs.length} platforms for ${stopName}...`);
+
+            // WRAP IN CATCH: If one platform fails (404/500), ignore it and keep the others
+            const requests = refs.map(ref =>
+                ctsService.getStopMonitoring(ref).catch(() => [])
+            );
+
+            const responses = await Promise.all(requests);
+            const allArrivals = responses.flat();
+
+            // 3. Filter & Deduplicate
+            const validLines = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
+
+            const tramArrivals = allArrivals.filter(arr =>
+                validLines.includes(arr.PublishedLineName)
+            );
+
+            // Sort by time
+            const sorted = tramArrivals.sort((a, b) =>
+                new Date(a.MonitoredCall.ExpectedArrivalTime).getTime() - new Date(b.MonitoredCall.ExpectedArrivalTime).getTime()
+            );
+
+            // Deduplicate (same line, same direction, same time)
+            const deduped = sorted.filter((v, i, a) =>
+                a.findIndex(t => (
+                    t.PublishedLineName === v.PublishedLineName &&
+                    t.DirectionRef === v.DirectionRef &&
+                    Math.abs(new Date(t.MonitoredCall.ExpectedArrivalTime).getTime() - new Date(v.MonitoredCall.ExpectedArrivalTime).getTime()) < 60000 // Within 1 min
+                )) === i
+            );
+
+            if (deduped.length === 0) {
+                setFetchError('noArrivals');
+            }
+
+            setAllArrivals(deduped); // Store ALL valid arrivals
+
+        } catch (err) {
+            console.error('[Transport] Fetch failed:', err);
+            setFetchError('connectionError');
+        } finally {
+            setArrivalsLoading(false);
+        }
+    }, []);
+
+    useEffect(() => {
+        if (selectedStop) {
+            fetchArrivals(selectedStop.name);
+        } else {
+            setAllArrivals([]);
+        }
+    }, [selectedStop]);
 
     // --- Parking Map Handlers ---
     React.useImperativeHandle(ref, () => ({
@@ -137,59 +566,124 @@ export const TransportContent = React.memo(React.forwardRef<TransportRef>((props
         return { opacity: val < 0 ? 0 : (val > 1 ? 1 : val), transform: [{ translateX }], zIndex: 101 };
     });
 
+
+
     const openCTSWebsite = () => {
         Linking.openURL('https://www.cts-strasbourg.eu/en/');
     };
 
-    // Prepare GeoJSON Data
+
+
+    // Prepare GeoJSON Data (Using Local Shapes)
     const transportSource = useMemo(() => {
-        const features = TRANSPORT_LINES.map(line => {
-            if (line.geoJson && line.geoJson.type === 'Feature') {
-                return {
-                    type: 'Feature' as const,
-                    properties: { id: line.id, color: line.color },
-                    geometry: line.geoJson.geometry
-                };
-            }
-            return {
-                type: 'Feature' as const,
-                properties: { id: line.id, color: line.color },
-                geometry: line.geoJson || toGeoJSONLineString(offsetPolyline((line as any).path || [], 0)),
-            };
-        });
-        return { type: 'FeatureCollection' as const, features: features };
-    }, []);
+        // 1. Add ALL Local Lines (Trams A-H)
+        const localFeatures = TRANSPORT_LINES.map(line => ({
+            type: 'Feature' as const,
+            properties: {
+                id: line.id,
+                color: line.color,
+                isMain: true
+            },
+            geometry: line.geoJson.geometry
+        }));
+
+        // Apply Filters (Only Main Lines remain)
+        const filteredFeatures = localFeatures.filter(f => isLayersValues.mainLines);
+
+        console.log(`[TransportContent] Source Update. Total: ${localFeatures.length}. Showing: ${filteredFeatures.length}`);
+
+        return { type: 'FeatureCollection' as const, features: filteredFeatures };
+
+    }, [isLayersValues]);
+
+    // Old landmarksSource removed
 
     const stopsSource = useMemo(() => {
-        // Filter stops if line is selected?
-        if (!selectedLineId) return TRANSPORT_STOPS;
+        // Combine Local and Fetched Stops
+        // Note: fetchedStops might contain duplicates of TRANSPORT_STOPS. 
+        // For performance and cleanliness, we might want to deduplicate, but simple concatenation is safer to ensure we don't lose data.
 
+        let allFeatures = [...TRANSPORT_STOPS.features];
+
+        if (!selectedLineId) {
+            // Task 3: Stop Visibility Filter
+            // If only Main Lines active -> Filter to A-H
+            if (isLayersValues.mainLines) {
+                const mainScan = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
+                const filtered = allFeatures.filter((f: any) =>
+                    f.properties.lines && f.properties.lines.some((l: string) => mainScan.includes(l))
+                );
+                return { type: 'FeatureCollection', features: filtered };
+            }
+
+            return { type: 'FeatureCollection', features: [] };
+        }
+
+        // Check if selected line is a BUS_XX or TRAM_X
         const shortName = selectedLineId.replace('TRAM_', '').replace('BUS_', '');
-        const filteredFeatures = TRANSPORT_STOPS.features.filter((f: any) =>
-            f.properties.lines.includes(shortName)
+        const filteredFeatures = allFeatures.filter((f: any) =>
+            f.properties.lines && f.properties.lines.includes(shortName)
         );
         return { type: 'FeatureCollection', features: filteredFeatures };
-    }, [selectedLineId]);
+    }, [selectedLineId, isLayersValues]);
 
     const toggleLineSelection = (id: string) => {
-        setSelectedLineId(prev => (prev === id ? null : id));
+        setSelectedLineId(prev => {
+            const newState = (prev === id ? null : id);
+            if (newState) {
+                setSelectedPoi(null); // Clear POI selection
+            }
+            return newState;
+        });
         setSelectedStop(null); // Deselect stop on line change
+        setWalkRadiusGeoJSON(null);
     };
 
     const selectedLine = TRANSPORT_LINES.find(l => l.id === selectedLineId);
 
     const onStopPress = (e: any) => {
-        const feature = e.features[0];
-        if (feature) {
-            setSelectedStop(feature.properties);
+        const feature = e.features?.[0];
+        if (feature?.properties) {
+            console.log('Stop Name:', feature.properties.name);
+            // Include coordinates in the selected stop state for camera centering
+            const coords = feature.geometry?.type === 'Point' ? feature.geometry.coordinates : null;
+            setSelectedStop({ ...feature.properties, coordinates: coords });
+            setSelectedPoi(null); // Clear POI selection
+
+            // TASK 1: Auto-filter if a line is already selected on map
+            if (selectedLineId) {
+                const shortName = selectedLineId.replace('TRAM_', '').replace('BUS_', '');
+                // Check if this stop actually serves this line before filtering
+                if (feature.properties.lines?.includes(shortName)) {
+                    setArrivalFilter(shortName);
+                } else {
+                    setArrivalFilter(null); // Stop doesn't serve selected line
+                }
+            } else {
+                setArrivalFilter(null);
+            }
+
+            // Task 2: Generate Walking Radius (400m)
+            if (coords) {
+                const circle = createGeoJSONCircle(coords, 0.4); // 0.4km = 400m
+                setWalkRadiusGeoJSON(circle);
+            }
         }
     };
 
+    const handlePoiPress = useCallback((item: any) => {
+        setSelectedPoi(item);
+        setSelectedLineId(null);
+        setSelectedStop(null);
+        setWalkRadiusGeoJSON(null);
+    }, []);
+
     const renderMapContent = (fullscreen: boolean) => (
         <Mapbox.MapView
-            style={{ flex: 1 }}
-            styleURL={Mapbox.StyleURL.Street}
-            // styleURL="mapbox://styles/mapbox/light-v11" // Cleaner style for transport?
+            ref={mapView} // Attach ref
+            style={{ flex: 1, backgroundColor: '#FFFFFF' }}
+            tintColor="#FFFFFF"
+            styleURL="mapbox://styles/spectruh/cmkvi58o6007p01se6l820xty"
             surfaceView={false}
             scrollEnabled={fullscreen}
             zoomEnabled={fullscreen}
@@ -197,19 +691,44 @@ export const TransportContent = React.memo(React.forwardRef<TransportRef>((props
             rotateEnabled={fullscreen}
             attributionEnabled={false}
             logoEnabled={false}
-            onPress={() => setSelectedStop(null)}
+            onPress={() => {
+                setSelectedStop(null);
+                setSelectedPoi(null);
+                setWalkRadiusGeoJSON(null);
+            }}
         >
+            <Mapbox.UserLocation visible={fullscreen} />
             <Mapbox.Camera
-                zoomLevel={INITIAL_ZOOM}
-                centerCoordinate={CITY_CENTER}
-                animationMode={'none'}
+                ref={fullscreen ? mapCamera : null}
+                defaultSettings={{
+                    centerCoordinate: CITY_CENTER,
+                    zoomLevel: 9, // Start zoomed out
+                }}
+                // Remove 'centerCoordinate' and 'zoomLevel' props here!
+                // Keep User Tracking props:
+                followUserLocation={followingUser}
+                followUserMode={Mapbox.UserTrackingMode.Follow}
+                onUserTrackingModeChange={(e) => {
+                    if (!e.nativeEvent.payload.followUserLocation) {
+                        setFollowingUser(false);
+                    }
+                }}
             />
 
+
+
+
+
+
+
             {/* Lines Layer */}
+            {/* Lines Layer - Interaction Disabled (Background Only) */}
             <Mapbox.ShapeSource id="transportLines" shape={transportSource}>
                 {/* Normal/Background Lines */}
+                {/* Main Lines Layer (Always visible, standard opacity) */}
                 <Mapbox.LineLayer
-                    id="lines"
+                    id="lines-main"
+                    filter={['==', ['get', 'isMain'], true]}
                     style={{
                         lineColor: ['get', 'color'],
                         lineWidth: [
@@ -219,7 +738,25 @@ export const TransportContent = React.memo(React.forwardRef<TransportRef>((props
                         ],
                         lineCap: 'round',
                         lineJoin: 'round',
-                        lineOpacity: selectedLineId ? 0 : 0.8
+                        lineOpacity: 1 // Main lines always visible
+                    }}
+                />
+
+                {/* Advanced Bus Layer (MinZoom 12) */}
+                <Mapbox.LineLayer
+                    id="lines-buses"
+                    filter={['==', ['get', 'isMain'], false]}
+                    minZoomLevel={12}
+                    style={{
+                        lineColor: ['get', 'color'],
+                        lineWidth: [
+                            'interpolate', ['linear'], ['zoom'],
+                            12, 1,
+                            16, 4
+                        ],
+                        lineCap: 'round',
+                        lineJoin: 'round',
+                        lineOpacity: 0.8
                     }}
                 />
                 {/* Selected Line Highlight */}
@@ -240,6 +777,38 @@ export const TransportContent = React.memo(React.forwardRef<TransportRef>((props
                 />
             </Mapbox.ShapeSource>
 
+
+
+            {/* Walking Radius Layer (Task 2) */}
+            {
+                walkRadiusGeoJSON && (
+                    <Mapbox.ShapeSource id="walkRadiusSource" shape={walkRadiusGeoJSON}>
+                        <Mapbox.FillLayer
+                            id="walkRadiusLayer"
+                            style={{
+                                fillColor: theme.primary,
+                                fillOpacity: 0.15,
+                                fillOutlineColor: theme.primary,
+                            }}
+                        />
+                    </Mapbox.ShapeSource>
+                )
+            }
+
+            {/* Landmarks / POI Layer - Using PointAnnotation for Badges */}
+            {
+                poiFeatures.map((item: any) => (
+                    <PoiMarker
+                        key={item.id}
+                        item={item}
+                        nearestStop={item.nearestStop}
+                        onPress={handlePoiPress}
+                        isSelected={selectedPoi?.id === item.id}
+                        theme={theme}
+                    />
+                ))
+            }
+
             {/* Stops Layer - Only visible when zoomed in a bit or if line selected? */}
             {/* Or always visible but small? */}
             <Mapbox.ShapeSource id="transportStops" shape={stopsSource as any} onPress={onStopPress} hitbox={{ width: 20, height: 20 }}>
@@ -248,7 +817,11 @@ export const TransportContent = React.memo(React.forwardRef<TransportRef>((props
                     id="stops"
                     aboveLayerID="lines-selected"
                     minZoomLevel={12}
-                    filter={['!=', ['get', 'uniqueId'], selectedStop?.uniqueId || '']}
+                    filter={
+                        isSeasonalMode
+                            ? ['all', ['!=', ['get', 'uniqueId'], selectedStop?.uniqueId || ''], ['!', ['in', ['get', 'name'], ['literal', CLOSED_STOP_NAMES]]]]
+                            : ['!=', ['get', 'uniqueId'], selectedStop?.uniqueId || '']
+                    }
                     style={{
                         circleRadius: [
                             'interpolate', ['linear'], ['zoom'],
@@ -278,6 +851,40 @@ export const TransportContent = React.memo(React.forwardRef<TransportRef>((props
                         circleOpacity: 1
                     }}
                 />
+                {/* Highlighted Stop (Visual Only - Action 2) */}
+                <Mapbox.CircleLayer
+                    id="stops-highlighted"
+                    aboveLayerID="stops-selected"
+                    filter={['==', ['get', 'uniqueId'], selectedPoi?.nearestStop?.uniqueId || '']}
+                    style={{
+                        circleRadius: [
+                            'interpolate', ['linear'], ['zoom'],
+                            12, 6,
+                            16, 15 // Larger pulsate effect
+                        ],
+                        circleColor: 'transparent',
+                        circleStrokeColor: theme.primary,
+                        circleStrokeWidth: 3,
+                        circleOpacity: 1
+                    }}
+                />
+
+                {/* Task 1: Ticket Vending Badges (Scenario B - SymbolLayer overlay) */}
+                <Mapbox.SymbolLayer
+                    id="stopBadges"
+                    aboveLayerID="stops"
+                    minZoomLevel={13}
+                    filter={['==', ['to-boolean', ['get', 'has_ticket_machine']], true]}
+                    style={{
+                        iconImage: 'ticket-badge', // Note: User needs to add this image to style
+                        iconSize: ['interpolate', ['linear'], ['zoom'], 13, 0.4, 16, 0.8],
+                        iconOffset: [8, -8], // Top-right offset relative to the circle
+                        iconAllowOverlap: true,
+                        iconIgnorePlacement: true,
+                        iconOpacity: 1
+                    }}
+                />
+
                 {/* Text Labels for Stops at high zoom */}
                 <Mapbox.SymbolLayer
                     id="stopLabels"
@@ -295,9 +902,20 @@ export const TransportContent = React.memo(React.forwardRef<TransportRef>((props
                             ? 1 // Always show if line filtering
                             : ['step', ['zoom'], 0, 15, 1] // Show after zoom 15 normally
                     }}
+                    filter={
+                        isSeasonalMode
+                            ? ['!', ['in', ['get', 'name'], ['literal', CLOSED_STOP_NAMES]]]
+                            : ['!=', '1', '2'] // Always show (dummy filter) or inherit?
+                        // Mapbox layers don't inherit, default is show all.
+                        // So we only need to apply filter if seasonal mode is on.
+                        // But to be safe and clear, let's just make it conditional in the props if possible?
+                        // Actually, passing `filter` prop is cleaner.
+                        // We will just use the same logic or undefined/null logic if easier, but RNMapbox might need explicit filter.
+                        // Let's explicitly allow all if not seasonal.
+                    }
                 />
             </Mapbox.ShapeSource>
-        </Mapbox.MapView>
+        </Mapbox.MapView >
     );
 
     const handleCloseParkingMap = () => {
@@ -368,15 +986,15 @@ export const TransportContent = React.memo(React.forwardRef<TransportRef>((props
                     activeOpacity={0.9}
                     onPress={handleOpenMap}
                 >
-                    <View style={styles.map} pointerEvents="none">
-                        {renderMapContent(false)}
-                    </View>
+                    <View style={[styles.map, { backgroundColor: '#e1e4e8' }]} />
 
                     <View style={styles.mapOverlay}>
                         <IconSymbol name="map" size={16} color="#000" style={{ marginRight: 6 }} />
                         <Text style={styles.mapOverlayText}>{i18n.t('tapToExpand')}</Text>
                     </View>
                 </TouchableOpacity>
+
+
 
                 {/* Live Parking Section */}
                 <View style={{ paddingHorizontal: 20, paddingTop: 10 }}>
@@ -397,65 +1015,396 @@ export const TransportContent = React.memo(React.forwardRef<TransportRef>((props
                 {/* -------------------- FULLSCREEN TRANSPORT MAP -------------------- */}
                 <Modal visible={isMapFullscreen} onRequestClose={handleCloseMap} animationType="none" transparent={true}>
                     <Animated.View style={[{ flex: 1, backgroundColor: theme.background }, animatedModalStyle]}>
-                        <SafeAreaView style={{ flex: 1 }}>
+                        <SafeAreaView style={{ flex: 1, position: 'relative' }}>
                             <View style={{ flex: 1 }}>{renderMapContent(true)}</View>
-                            <Animated.View style={[styles.filterContainer, uiStyle]}>
-                                <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.filterContent}>
-                                    {TRANSPORT_LINES.map(line => {
+
+                            {/* Controls Container - Only visible when no detail card is shown */}
+                            {/* Hide controls if an item is selected OR if the layers menu is open */}
+                            {(!selectedLineId && !selectedPoi && !selectedStop && !isLayersVisible) && (
+                                <>
+                                    {/* Layers FAB - Bottom Right */}
+                                    <TouchableOpacity
+                                        style={[
+                                            styles.layersFab,
+                                            {
+                                                backgroundColor: theme.cardBackground,
+                                                position: 'absolute',
+                                                top: undefined,
+                                                bottom: 42,
+                                                right: 16,
+                                                left: undefined,
+                                                zIndex: 60,
+                                                elevation: 6
+                                            }
+                                        ]}
+                                        onPress={() => setIsLayersVisible(true)}
+                                    >
+                                        <IconSymbol name="line.3.horizontal" size={24} color={theme.text} />
+                                    </TouchableOpacity>
+
+                                    {/* Search Pill - Bottom Left (taking width) */}
+                                    <View style={[
+                                        styles.mapSearchPill,
+                                        {
+                                            backgroundColor: theme.cardBackground,
+                                            borderColor: theme.border,
+                                            top: undefined,
+                                            bottom: 42,
+                                            left: 16,
+                                            right: 80, // Leave space for FAB
+                                        }
+                                    ]}>
+                                        <IconSymbol name="magnifyingglass" size={18} color={theme.icon} />
+                                        <TextInput
+                                            placeholder={i18n.t('searchPlaceholder')}
+                                            placeholderTextColor={theme.icon}
+                                            style={[styles.mapSearchInput, { color: theme.text }]}
+                                            value={search}
+                                            onChangeText={setSearch}
+                                            returnKeyType="search"
+                                        />
+                                        {search.length > 0 && (
+                                            <TouchableOpacity onPress={() => setSearch('')} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
+                                                <IconSymbol name="xmark.circle.fill" size={16} color={theme.icon} />
+                                            </TouchableOpacity>
+                                        )}
+                                    </View>
+
+                                    {/* Filter Chips (Stacked Above Search) */}
+                                    <View style={[
+                                        styles.filterContainer,
+                                        {
+                                            top: undefined,
+                                            bottom: 100, // Search height (48) + gap (~20)
+                                        }
+                                    ]}>
+                                        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.filterScroll}>
+                                            {['sights', 'restaurants', 'museums', 'activities'].map((f) => {
+                                                const isActive = mapFilter === f && isLayersValues.landmarks;
+                                                const color = getCategoryColor(f);
+                                                const activeBg = color;
+
+                                                return (
+                                                    <TouchableOpacity
+                                                        key={f}
+                                                        style={[
+                                                            styles.filterChip,
+                                                            {
+                                                                backgroundColor: isActive ? activeBg : theme.cardBackground,
+                                                                borderColor: activeBg,
+                                                                borderWidth: 1,
+                                                                elevation: 4,
+                                                                shadowColor: '#000',
+                                                                shadowOffset: { width: 0, height: 2 },
+                                                                shadowOpacity: 0.1,
+                                                                shadowRadius: 2,
+                                                            }
+                                                        ]}
+                                                        onPress={() => {
+                                                            if (mapFilter === f && isLayersValues.landmarks) {
+                                                                // If clicking same active filter, toggle off
+                                                                setIsLayersValues(prev => ({ ...prev, landmarks: false }));
+                                                                setMapFilter('all');
+                                                            } else {
+                                                                // Switch to new filter and ensure on
+                                                                setMapFilter(f);
+                                                                setIsLayersValues(prev => ({ ...prev, landmarks: true }));
+                                                            }
+                                                            setSelectedPoi(null);
+                                                        }}
+                                                    >
+                                                        <Text style={[
+                                                            styles.filterText,
+                                                            { color: isActive ? '#FFF' : color }
+                                                        ]}>
+                                                            {i18n.t(f as any)}
+                                                        </Text>
+                                                    </TouchableOpacity>
+                                                );
+                                            })}
+                                        </ScrollView>
+                                    </View>
+                                </>
+                            )}
+
+                            {isLayersValues.mainLines && !isMapClosing && (
+                                <Animated.View
+                                    entering={SlideInLeft.duration(300)}
+                                    exiting={SlideOutLeft.duration(300)}
+                                    style={styles.leftLegendContainer}
+                                >
+                                    {['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'].map(l => {
+                                        const line = TRANSPORT_LINES.find(t => t.id.endsWith(l));
+                                        if (!line) return null;
                                         const isSelected = selectedLineId === line.id;
-                                        const isFaded = selectedLineId !== null && !isSelected;
                                         return (
                                             <TouchableOpacity
-                                                key={line.id}
+                                                key={l}
                                                 onPress={() => toggleLineSelection(line.id)}
-                                                style={[styles.filterChip, { backgroundColor: line.color, opacity: isFaded ? 0.4 : 1, transform: [{ scale: isSelected ? 1.1 : 1 }] }]}
+                                                style={[
+                                                    styles.legendItem,
+                                                    {
+                                                        backgroundColor: isSelected ? line.color : theme.cardBackground,
+                                                        borderColor: line.color,
+                                                        borderWidth: 2,
+                                                    }
+                                                ]}
                                             >
-                                                <Text style={[styles.filterText, { color: '#FFF' }]}>{line.id.replace('TRAM_', '').replace('BUS_', '')}</Text>
+                                                <Text style={[styles.legendText, { color: isSelected ? '#FFF' : theme.text }]}>{l}</Text>
                                             </TouchableOpacity>
                                         );
                                     })}
-                                </ScrollView>
-                            </Animated.View>
+                                </Animated.View>
+                            )}
+
+
+
+                            <LayersMenu
+                                visible={isLayersVisible}
+                                onClose={() => setIsLayersVisible(false)}
+                                layers={isLayersValues}
+                                toggleLayer={(key: keyof typeof isLayersValues) => setIsLayersValues(prev => ({ ...prev, [key]: !prev[key] }))}
+                                theme={theme}
+                                isSeasonalMode={isSeasonalMode}
+                                toggleSeasonal={() => setIsSeasonalMode(p => !p)}
+                            />
+
+                            {/* POI Detail Card */}
+                            {selectedPoi && (
+                                <Animated.View entering={FadeInDown.duration(200)} exiting={FadeOutDown.duration(200)} style={[styles.detailCard, { backgroundColor: theme.cardBackground, flexDirection: 'row', minHeight: 120, padding: 0, overflow: 'hidden' }, uiStyle]}>
+                                    {/* Image */}
+                                    <View style={{ width: 110, height: '100%' }}>
+                                        <Image source={typeof selectedPoi.image === 'string' ? { uri: selectedPoi.image } : selectedPoi.image} style={{ width: '100%', height: '100%', resizeMode: 'cover' }} />
+                                    </View>
+
+                                    {/* Content */}
+                                    <View style={{ flex: 1, padding: 12, justifyContent: 'space-between' }}>
+                                        <View>
+                                            <Text style={[styles.detailTitle, { color: theme.text }]} numberOfLines={1}>{tData(selectedPoi, 'name')}</Text>
+                                            <Text style={{ fontSize: 12, color: theme.icon }} numberOfLines={2}>{tData(selectedPoi, 'shortDescription')}</Text>
+                                        </View>
+
+                                        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+                                            <View style={{ backgroundColor: getCategoryColor(selectedPoi.type), paddingHorizontal: 6, paddingVertical: 2, borderRadius: 4 }}>
+                                                <Text style={{ fontSize: 10, fontWeight: '700', color: '#222' }}>{i18n.t(selectedPoi.type).toUpperCase()}</Text>
+                                            </View>
+
+                                            <TouchableOpacity
+                                                style={{ flexDirection: 'row', alignItems: 'center' }}
+                                                onPress={() => router.push(`/sight/${selectedPoi.id}` as any)}
+                                            >
+                                                <Text style={{ color: theme.primary, fontWeight: '600', fontSize: 13, marginRight: 2 }}>{i18n.t('more')}</Text>
+                                                <IconSymbol name="chevron.right" size={16} color={theme.primary} />
+                                            </TouchableOpacity>
+                                        </View>
+
+                                        {/* Nearest Stop Action (Action 3) */}
+                                        {selectedPoi.nearestStop && (
+                                            <TouchableOpacity
+                                                onPress={() => {
+                                                    // Trigger existing stop selection logic
+                                                    setSelectedStop(selectedPoi.nearestStop);
+                                                    // Stop Card will replace POI Card because selectedStop overrides render.
+                                                    setSelectedPoi(null);
+                                                }}
+                                                style={{
+                                                    marginTop: 6,
+                                                    flexDirection: 'row',
+                                                    alignItems: 'center',
+                                                    backgroundColor: theme.background,
+                                                    paddingVertical: 5,
+                                                    paddingHorizontal: 8,
+                                                    borderRadius: 8,
+                                                    borderWidth: 1,
+                                                    borderColor: theme.border,
+                                                    alignSelf: 'flex-start'
+                                                }}
+                                            >
+                                                <MaterialIcons name="directions-bus" size={14} color={theme.text} style={{ marginRight: 6 }} />
+                                                <Text style={{ fontSize: 11, fontWeight: '600', color: theme.text }}>
+                                                    {i18n.t('showArrivals', { defaultValue: 'Show Arrivals' })} ({Math.round(selectedPoi.nearestStop.distance)}m)
+                                                </Text>
+                                            </TouchableOpacity>
+                                        )}
+                                    </View>
+
+                                    {/* Close Button */}
+                                    <TouchableOpacity
+                                        style={[
+                                            styles.closeLineButton,
+                                            {
+                                                position: 'absolute',
+                                                top: 8,
+                                                right: 8,
+                                                backgroundColor: theme.background,
+                                                width: 32,
+                                                height: 32,
+                                                borderRadius: 16,
+                                                marginLeft: 0,
+                                                shadowColor: "#000",
+                                                shadowOffset: { width: 0, height: 2 },
+                                                shadowOpacity: 0.2,
+                                                shadowRadius: 3,
+                                                elevation: 4
+                                            }
+                                        ]}
+                                        onPress={() => setSelectedPoi(null)}
+                                        hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                                    >
+                                        <IconSymbol name="xmark" size={16} color={theme.text} />
+                                    </TouchableOpacity>
+                                </Animated.View>
+                            )}
+
+                            {/* --- Existing Line Detail Card --- */}
                             {selectedLine && !selectedStop && (
-                                <Animated.View entering={FadeInDown.duration(200)} style={[styles.detailCard, { backgroundColor: theme.cardBackground }, uiStyle]}>
-                                    <View style={[styles.detailIcon, { backgroundColor: selectedLine.color }]}>
-                                        <MaterialIcons name={selectedLine.type === 'tram' ? 'tram' : 'directions-bus'} size={20} color="#FFF" />
+                                <Animated.View entering={FadeInDown.duration(200)} exiting={FadeOutDown.duration(200)} style={[styles.detailCard, { backgroundColor: theme.cardBackground }, uiStyle]}>
+                                    <View style={[styles.lineBadgeBig, { backgroundColor: selectedLine.color }]}>
+                                        <Text style={styles.lineBadgeTextBig}>{selectedLine.id.replace('TRAM_', '').replace('BUS_', '')}</Text>
                                     </View>
                                     <View style={styles.detailTextContainer}>
                                         <Text style={[styles.detailTitle, { color: theme.text }]}>{selectedLine.name}</Text>
                                         <Text style={[styles.detailSubtitle, { color: theme.textSecondary }]}>{selectedLine.trajectory}</Text>
                                     </View>
+                                    <TouchableOpacity style={[styles.closeLineButton, { backgroundColor: theme.border }]} onPress={() => setSelectedLineId(null)}>
+                                        <MaterialIcons name="close" size={20} color={theme.text} />
+                                    </TouchableOpacity>
                                 </Animated.View>
                             )}
 
                             {/* Selected Stop Card */}
                             {selectedStop && (
-                                <Animated.View entering={FadeInDown.duration(200)} style={[styles.detailCard, { backgroundColor: theme.cardBackground }, uiStyle]}>
-                                    <View style={[styles.detailIcon, { backgroundColor: '#FFF', borderWidth: 2, borderColor: '#333' }]}>
-                                        <MaterialIcons name="place" size={24} color="#333" />
-                                    </View>
-                                    <View style={styles.detailTextContainer}>
-                                        <Text style={[styles.detailTitle, { color: theme.text }]}>{selectedStop.name}</Text>
-                                        <Text style={[styles.detailSubtitle, { color: theme.textSecondary }]}>{i18n.t('lines')}: </Text>
-                                        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 4, marginTop: 4 }}>
-                                            {(selectedStop.lines || []).map((l: string) => {
-                                                // Find color
-                                                const lineData = TRANSPORT_LINES.find(data => data.id.endsWith(l));
-                                                const color = lineData?.color || '#333';
-                                                return (
-                                                    <View key={l} style={{ backgroundColor: color, paddingHorizontal: 6, paddingVertical: 2, borderRadius: 4 }}>
-                                                        <Text style={{ color: '#FFF', fontSize: 12, fontWeight: 'bold' }}>{l}</Text>
-                                                    </View>
-                                                );
-                                            })}
+                                <Animated.View entering={FadeInDown.duration(200)} exiting={FadeOutDown.duration(200)} style={[styles.detailCard, { backgroundColor: theme.cardBackground, flexDirection: 'column', alignItems: 'stretch' }, uiStyle]}>
+                                    <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 12 }}>
+                                        <View style={[styles.detailIcon, { backgroundColor: '#FFF', borderWidth: 2, borderColor: '#333' }]}>
+                                            <MaterialIcons name="place" size={24} color="#333" />
                                         </View>
+                                        <View style={styles.detailTextContainer}>
+                                            <Text style={[styles.detailTitle, { color: theme.text }]}>{selectedStop.name}</Text>
+                                            <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6 }}>
+                                                {(selectedStop.lines || []).map((l: string) => {
+                                                    const lineData = TRANSPORT_LINES.find(data => data.id.endsWith(l));
+                                                    const color = lineData?.color || '#333';
+                                                    const isActive = arrivalFilter === l;
+                                                    const isDimmed = arrivalFilter !== null && !isActive;
+
+                                                    return (
+                                                        <TouchableOpacity
+                                                            key={l}
+                                                            onPress={() => {
+                                                                const newFilter = arrivalFilter === l ? null : l;
+                                                                setArrivalFilter(newFilter);
+
+                                                                // TASK 2: Sync Map Highlight
+                                                                if (newFilter) {
+                                                                    // Find the full ID (e.g. TRAM_A) for this short name (A)
+                                                                    const lineObj = TRANSPORT_LINES.find(data => data.id.endsWith(`_${l}`));
+                                                                    if (lineObj) setSelectedLineId(lineObj.id);
+                                                                } else {
+                                                                    // Optional: If they unclick the badge, do we clear the map line? 
+                                                                    // Yes, per user request to "toggle" selection.
+                                                                    setSelectedLineId(null);
+                                                                }
+                                                            }}
+                                                            style={{
+                                                                backgroundColor: color,
+                                                                paddingHorizontal: 8,
+                                                                paddingVertical: 4,
+                                                                borderRadius: 6,
+                                                                opacity: isDimmed ? 0.3 : 1,
+                                                                transform: [{ scale: isActive ? 1.1 : 1 }],
+                                                                borderWidth: isActive ? 2 : 0,
+                                                                borderColor: theme.text // High contrast border
+                                                            }}
+                                                        >
+                                                            <Text style={{ color: '#FFF', fontSize: 12, fontWeight: 'bold' }}>{l}</Text>
+                                                        </TouchableOpacity>
+                                                    );
+                                                })}
+                                            </View>
+                                        </View>
+                                        <TouchableOpacity
+                                            onPress={() => fetchArrivals(selectedStop.name)}
+                                            style={[styles.refreshButton, { backgroundColor: theme.border }]}
+                                            disabled={arrivalsLoading}
+                                        >
+                                            <MaterialIcons
+                                                name="refresh"
+                                                size={20}
+                                                color={theme.text}
+                                                style={{ transform: [{ rotate: arrivalsLoading ? '45deg' : '0deg' }] }}
+                                            />
+                                        </TouchableOpacity>
+                                    </View>
+
+                                    {/* Arrivals List */}
+                                    <View style={styles.arrivalsContainer}>
+                                        <Text style={[styles.arrivalsHeader, { color: theme.textSecondary }]}>{i18n.t('realTimeArrivals')}</Text>
+
+                                        {(() => {
+                                            // Compute displayed arrivals inside render (or extract to useMemo above if preferred, but inline is fine here for simplicity)
+                                            const displayedArrivals = (() => {
+                                                if (!arrivalFilter) return allArrivals.slice(0, 5);
+                                                return allArrivals
+                                                    .filter(a => a.PublishedLineName === arrivalFilter)
+                                                    .slice(0, 5);
+                                            })();
+
+                                            if (arrivalsLoading) {
+                                                return <Text style={[styles.arrivalText, { color: theme.textSecondary, fontStyle: 'italic' }]}>{i18n.t('loadingArrivals')}</Text>;
+                                            }
+
+                                            if (fetchError) {
+                                                return (
+                                                    <Text style={[styles.arrivalText, { color: theme.textSecondary }]}>
+                                                        {fetchError === 'noArrivals' ? i18n.t('noArrivals') :
+                                                            fetchError === 'stopNotFound' ? 'Stop not found in CTS registry (Names might differ)' :
+                                                                fetchError === 'connectionError' ? 'Failed to connect to CTS API' : fetchError}
+                                                    </Text>
+                                                );
+                                            }
+
+                                            if (displayedArrivals.length > 0) {
+                                                return displayedArrivals.map((arr, idx) => {
+                                                    const lineData = TRANSPORT_LINES.find(l => l.id.endsWith(arr.PublishedLineName));
+                                                    const color = lineData?.color || '#333';
+
+                                                    // Calculate minutes until arrival
+                                                    const arrivalTime = new Date(arr.MonitoredCall.ExpectedArrivalTime).getTime();
+                                                    const now = new Date().getTime();
+                                                    const diffMins = Math.max(0, Math.floor((arrivalTime - now) / 60000));
+
+                                                    return (
+                                                        <View key={idx} style={styles.arrivalRow}>
+                                                            <View style={[styles.linePill, { backgroundColor: color }]}>
+                                                                <Text style={styles.linePillText}>{arr.PublishedLineName}</Text>
+                                                            </View>
+                                                            <Text style={[styles.arrivalDest, { color: theme.text }]} numberOfLines={1}>
+                                                                {arr.DestinationName}
+                                                            </Text>
+                                                            <Text style={[styles.arrivalTime, { color: diffMins <= 5 ? theme.success : theme.text }]}>
+                                                                {diffMins === 0 ? 'Now' : `${diffMins} min`}
+                                                            </Text>
+                                                        </View>
+                                                    );
+                                                });
+                                            }
+
+                                            return <Text style={[styles.arrivalText, { color: theme.textSecondary }]}>{i18n.t('noArrivals')}</Text>;
+                                        })()}
                                     </View>
                                 </Animated.View>
                             )}
 
                             <Animated.View style={[styles.closeButtonContainer, closeButtonAnimationStyle]}>
-                                <TouchableOpacity style={[styles.closeButton, { backgroundColor: theme.cardBackground }]} onPress={handleCloseMap}>
+                                <TouchableOpacity style={[styles.closeButton, { backgroundColor: theme.cardBackground, marginBottom: 12 }]} onPress={handleCloseMap}>
                                     <MaterialIcons name="close" size={24} color={theme.text} />
+                                </TouchableOpacity>
+                                <TouchableOpacity style={[styles.closeButton, { backgroundColor: theme.cardBackground, marginBottom: 12 }]} onPress={handleResetNorth}>
+                                    <IconSymbol name="location.north.circle" size={24} color={theme.text} />
+                                </TouchableOpacity>
+                                <TouchableOpacity style={[styles.closeButton, { backgroundColor: theme.cardBackground }]} onPress={() => handleLocateMe()}>
+                                    <MaterialIcons name="my-location" size={24} color={theme.text} />
                                 </TouchableOpacity>
                             </Animated.View>
                         </SafeAreaView>
@@ -466,14 +1415,22 @@ export const TransportContent = React.memo(React.forwardRef<TransportRef>((props
                 <Modal visible={isParkingMapVisible} onRequestClose={handleCloseParkingMap} animationType="fade" transparent={false}>
                     <View style={{ flex: 1, backgroundColor: theme.background }}>
                         <Mapbox.MapView
-                            style={{ flex: 1 }}
-                            styleURL={Mapbox.StyleURL.Street}
+                            style={{ flex: 1, backgroundColor: '#FFFFFF' }}
+                            tintColor="#FFFFFF"
+                            styleURL="mapbox://styles/spectruh/cmkvi58o6007p01se6l820xty"
                             onPress={() => setSelectedParking(null)}
                         >
+                            <Mapbox.UserLocation visible={true} />
                             <Mapbox.Camera
-                                defaultSettings={{ centerCoordinate: CITY_CENTER, zoomLevel: 12.5 }}
+                                ref={parkingMapCamera}
+                                defaultSettings={{
+                                    centerCoordinate: CITY_CENTER,
+                                    zoomLevel: 12.5,
+                                }}
                                 zoomLevel={selectedParking ? 15 : 12.5}
                                 centerCoordinate={selectedParking ? [selectedParking.position.lon, selectedParking.position.lat] : CITY_CENTER}
+                                followUserLocation={followingUser}
+                                followUserMode={Mapbox.UserTrackingMode.Follow}
                                 animationMode="flyTo"
                                 animationDuration={800}
                             />
@@ -488,6 +1445,13 @@ export const TransportContent = React.memo(React.forwardRef<TransportRef>((props
                             ))}
                         </Mapbox.MapView>
 
+
+                        <TouchableOpacity
+                            style={[styles.floatingCloseBtn, { top: 110, backgroundColor: theme.cardBackground }]}
+                            onPress={() => handleLocateMe()}
+                        >
+                            <MaterialIcons name="my-location" size={20} color={theme.primary} />
+                        </TouchableOpacity>
 
                         <TouchableOpacity
                             style={[styles.floatingCloseBtn, { backgroundColor: theme.cardBackground, shadowColor: '#000' }]}
@@ -554,7 +1518,7 @@ export const TransportContent = React.memo(React.forwardRef<TransportRef>((props
                         )}
                     </View>
                 </Modal>
-            </ScrollView>
+            </ScrollView >
         </SafeAreaView >
     );
 }));
@@ -639,47 +1603,164 @@ const styles = StyleSheet.create({
         shadowRadius: 4,
         elevation: 5,
     },
-    filterContainer: {
+    stopLabels: {
+        fontSize: 12,
+        fontWeight: 'bold',
+    },
+    lineBadgeBig: {
+        width: 48,
+        height: 48,
+        borderRadius: 8,
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginRight: 16,
+    },
+    lineBadgeTextBig: {
+        color: '#FFF',
+        fontSize: 18,
+        fontWeight: '900',
+    },
+    closeLineButton: {
+        width: 32,
+        height: 32,
+        borderRadius: 16,
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginLeft: 10,
+    },
+
+    // --- Layers Menu Styles ---
+    layersFab: {
         position: 'absolute',
-        bottom: 20,
-        left: 0,
-        right: 0,
-    },
-    filterContent: {
-        paddingHorizontal: 20,
-        gap: 10,
-        paddingVertical: 12,
-    },
-    filterChip: {
-        width: 44,
-        height: 44,
-        borderRadius: 22,
+        bottom: 30,
+        right: 20,
+        width: 50,
+        height: 50,
+        borderRadius: 25,
         alignItems: 'center',
         justifyContent: 'center',
         shadowColor: "#000",
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.25,
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.3,
         shadowRadius: 4,
-        elevation: 4,
+        elevation: 6,
+        zIndex: 90,
     },
-    filterText: {
-        fontSize: 18,
+    layersBackdrop: {
+        position: 'absolute',
+        top: 0, bottom: 0, left: 0, right: 0,
+        backgroundColor: 'rgba(0,0,0,0.5)',
+        justifyContent: 'flex-end',
+        zIndex: 110,
+    },
+    layersMenu: {
+        padding: 24,
+        borderTopLeftRadius: 24,
+        borderTopRightRadius: 24,
+        paddingBottom: 40,
+        elevation: 20,
+        zIndex: 120,
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: -2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 10,
+    },
+    layersTitle: {
+        fontSize: 20,
         fontWeight: 'bold',
+        marginBottom: 20,
+    },
+    layersSection: {
+        fontSize: 12,
+        fontWeight: 'bold',
+        textTransform: 'uppercase',
+        marginBottom: 12,
+        marginTop: 8,
+    },
+    layerRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginBottom: 16,
+    },
+    layerText: {
+        fontSize: 16,
+        fontWeight: '500',
+        marginLeft: 12,
+    },
+    layerSubtext: {
+        fontSize: 12,
+        marginLeft: 12,
+        marginTop: 2,
+    },
+    divider: {
+        height: 1,
+        marginVertical: 12,
+        opacity: 0.2,
     },
     detailCard: {
         position: 'absolute',
-        bottom: 100,
+        bottom: 30,
         left: 20,
         right: 20,
         padding: 16,
         borderRadius: 16,
-        flexDirection: 'row',
-        alignItems: 'center',
         shadowColor: "#000",
         shadowOffset: { width: 0, height: 4 },
         shadowOpacity: 0.15,
         shadowRadius: 8,
         elevation: 6,
+    },
+    refreshButton: {
+        width: 36,
+        height: 36,
+        borderRadius: 18,
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    arrivalsContainer: {
+        marginTop: 4,
+        borderTopWidth: 1,
+        borderTopColor: 'rgba(0,0,0,0.05)',
+        paddingTop: 8,
+    },
+    arrivalsHeader: {
+        fontSize: 12,
+        fontWeight: 'bold',
+        textTransform: 'uppercase',
+        marginBottom: 8,
+        letterSpacing: 0.5,
+    },
+    arrivalRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginBottom: 8,
+    },
+    linePill: {
+        width: 28,
+        height: 20,
+        borderRadius: 4,
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginRight: 10,
+    },
+    linePillText: {
+        color: '#FFF',
+        fontSize: 12,
+        fontWeight: 'bold',
+    },
+    arrivalDest: {
+        flex: 1,
+        fontSize: 14,
+        fontWeight: '500',
+    },
+    arrivalTime: {
+        fontSize: 14,
+        fontWeight: 'bold',
+        marginLeft: 10,
+    },
+    arrivalText: {
+        fontSize: 14,
+        paddingVertical: 4,
     },
     detailIcon: {
         width: 40,
@@ -789,5 +1870,119 @@ const styles = StyleSheet.create({
     progressBar: {
         height: '100%',
         borderRadius: 4,
+    },
+    mapSearchPill: {
+        position: 'absolute',
+        top: 20,
+        left: 20,
+        right: 20,
+        height: 48,
+        borderRadius: 24,
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingHorizontal: 16,
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.15,
+        shadowRadius: 3,
+        elevation: 5,
+        borderWidth: 1,
+        zIndex: 50,
+    },
+    mapSearchInput: {
+        flex: 1,
+        fontSize: 16,
+        marginLeft: 8,
+        height: '100%',
+        paddingVertical: 0,
+    },
+    filterContainer: {
+        position: 'absolute',
+        top: 120,
+        left: 0,
+        right: 0,
+        zIndex: 49,
+        elevation: 49,
+    },
+    filterScroll: {
+        paddingHorizontal: 20,
+        paddingVertical: 8,
+        gap: 10,
+        alignItems: 'center'
+    },
+    filterChip: {
+        paddingHorizontal: 16,
+        paddingVertical: 8,
+        borderRadius: 20,
+        height: 36,
+        justifyContent: 'center'
+    },
+    filterText: {
+        fontWeight: '600',
+        textTransform: 'capitalize',
+        fontSize: 13,
+    },
+    // --- Legend Styles ---
+    leftLegendContainer: {
+        position: 'absolute',
+        left: 16,
+        top: 100,
+        gap: 12,
+        zIndex: 55,
+        alignItems: 'center',
+    },
+    legendItem: {
+        width: 36,
+        height: 36,
+        borderRadius: 18,
+        alignItems: 'center',
+        justifyContent: 'center',
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.2,
+        shadowRadius: 3,
+        elevation: 4,
+    },
+    legendText: {
+        fontSize: 14,
+        fontWeight: '900',
+    },
+    // --- Poi Marker Styles ---
+    poiMarkerBody: {
+        width: 24,
+        height: 24,
+        borderRadius: 12,
+        alignItems: 'center',
+        justifyContent: 'center',
+        borderWidth: 1.5,
+        borderColor: '#FFF',
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.2,
+        shadowRadius: 2,
+    },
+    poiBadgeContainer: {
+        position: 'absolute',
+        top: 4,
+        right: 0,
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        maxWidth: 60,
+        gap: 2,
+    },
+    poiBadge: {
+        paddingHorizontal: 3,
+        paddingVertical: 1,
+        borderRadius: 4,
+        minWidth: 14,
+        alignItems: 'center',
+        justifyContent: 'center',
+        borderWidth: 1,
+        borderColor: '#FFF',
+    },
+    poiBadgeText: {
+        color: '#FFF',
+        fontSize: 8,
+        fontWeight: '800',
     },
 });
