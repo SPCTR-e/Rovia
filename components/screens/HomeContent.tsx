@@ -211,7 +211,7 @@ export function HomeContent({ onNavigate, onLanguageChange }: { onNavigate: (pat
                             <View style={[styles.badge, { backgroundColor: theme.primary }]}>
                                 <Text style={[styles.badgeText, { color: theme.background }]}>{i18n.t('mustSee') || 'MUST SEE'}</Text>
                             </View>
-                            <Text style={[styles.heroTitle, { color: theme.background }]} numberOfLines={2}>{tData(featuredSight, 'name')}</Text>
+                            <Text style={[styles.heroTitle, { color: '#F5F0EB' }]} numberOfLines={2}>{tData(featuredSight, 'name')}</Text>
                             <Text style={styles.heroSubtitle} numberOfLines={2}>{tData(featuredSight, 'shortDescription')}</Text>
                         </View>
                     </TouchableOpacity>
@@ -292,7 +292,7 @@ export function HomeContent({ onNavigate, onLanguageChange }: { onNavigate: (pat
 
                         <View style={styles.heroOverlay}>
 
-                            <Text style={[styles.heroTitle, { color: theme.background }]}>{tData(BATORAMA_DATA, 'name')}</Text>
+                            <Text style={[styles.heroTitle, { color: '#F5F0EB' }]}>{tData(BATORAMA_DATA, 'name')}</Text>
                             <Text style={styles.heroSubtitle}>
                                 {((BATORAMA_DATA.translations as any)[i18n.locale] || BATORAMA_DATA.translations.en).tagline}
                             </Text>
