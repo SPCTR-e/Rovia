@@ -7,27 +7,27 @@ import { IconSymbol } from './ui/icon-symbol';
 
 
 const getWeatherIcon = (code: number, isDay: boolean): string => {
-    
+
     if (code === 0) return isDay ? 'sun.max.fill' : 'moon.fill';
-    
+
     if (code === 1) return isDay ? 'cloud.sun.fill' : 'cloud.moon.fill';
     if (code === 2) return 'cloud.fill';
     if (code === 3) return 'cloud.fill';
-    
+
     if (code === 45 || code === 48) return 'cloud.fog.fill';
-    
+
     if (code >= 51 && code <= 55) return 'cloud.drizzle.fill';
-    
+
     if (code >= 61 && code <= 65) return 'cloud.rain.fill';
-    
+
     if (code === 66 || code === 67) return 'cloud.sleet.fill';
-    
+
     if (code >= 71 && code <= 77) return 'snowflake';
-    
+
     if (code >= 80 && code <= 82) return 'cloud.sun.rain.fill';
-    
+
     if (code >= 85 && code <= 86) return 'cloud.snow.fill';
-    
+
     if (code >= 95) return 'cloud.bolt.rain.fill';
 
     return 'questionmark.circle';
@@ -58,7 +58,7 @@ const getWeatherDescription = (code: number, lang: string): string => {
     };
 
     const codeDesc = descriptions[code];
-    
+
     if (!codeDesc) return 'Unknown';
     return (codeDesc as any)[lang] || (codeDesc as any)['en'] || 'Unknown';
 };
@@ -72,7 +72,7 @@ export const WeatherWidget = () => {
     useEffect(() => {
         const fetchWeather = async () => {
             try {
-                
+
                 const response = await fetch(
                     'https://api.open-meteo.com/v1/forecast?latitude=48.5734&longitude=7.7521&current_weather=true'
                 );
@@ -103,14 +103,15 @@ export const WeatherWidget = () => {
 
     return (
         <View style={styles.container}>
-            <View style={[styles.pill, { backgroundColor: theme.cardBackground, borderColor: theme.border }]}>
-                <IconSymbol name={iconName as any} size={16} color={theme.primary} />
-                <Text style={[styles.tempText, { color: theme.text }]}>
-                    {Math.round(weather.temperature)}°C
-                </Text>
-                <View style={[styles.separator, { backgroundColor: theme.border }]} />
-                <Text style={[styles.descText, { color: theme.textSecondary }]}>
-                    {description}
+            <View style={[styles.content, { backgroundColor: theme.surface }]}>
+                <View style={styles.weatherLine}>
+                    <IconSymbol name={iconName as any} size={24} color={theme.accent} />
+                    <Text style={[styles.tempText, { color: theme.text }]}>
+                        {Math.round(weather.temperature)}°C
+                    </Text>
+                </View>
+                <Text style={[styles.descText, { color: theme.textMuted }]}>
+                    {description.toUpperCase()}
                 </Text>
             </View>
         </View>
@@ -119,34 +120,33 @@ export const WeatherWidget = () => {
 
 const styles = StyleSheet.create({
     container: {
-        marginTop: 8,
-        marginBottom: 4,
-        alignItems: 'flex-start',
+        marginTop: 12,
+        marginBottom: 8,
     },
     loadingContainer: {
-        height: 32,
+        height: 40,
         justifyContent: 'center',
-        marginLeft: 4,
     },
-    pill: {
+    content: {
+        paddingHorizontal: 12,
+        paddingVertical: 10,
+        borderRadius: 12,
+        alignItems: 'flex-start',
+        gap: 2,
+    },
+    weatherLine: {
         flexDirection: 'row',
         alignItems: 'center',
-        paddingHorizontal: 12,
-        paddingVertical: 6,
-        borderRadius: 20,
-        borderWidth: 1,
         gap: 8,
     },
     tempText: {
-        fontSize: 14,
-        fontWeight: '700',
+        fontSize: 32,
+        fontFamily: 'CormorantGaramond_300Light',
+        lineHeight: 38,
     },
     descText: {
-        fontSize: 14,
-        fontWeight: '500',
-    },
-    separator: {
-        width: 1,
-        height: 14,
+        fontSize: 12,
+        fontFamily: 'Outfit_200ExtraLight',
+        letterSpacing: 1.2,
     },
 });

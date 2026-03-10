@@ -217,6 +217,7 @@ export function UnifiedTabs() {
                 ]}>
                     {label}
                 </Text>
+                {isActive && <View style={[styles.activeDot, { backgroundColor: theme.tint }]} />}
             </TouchableOpacity>
         );
     };
@@ -282,7 +283,10 @@ export function UnifiedTabs() {
                     pointerEvents={activeIndex === 2 ? 'auto' : 'none'}
                     style={[
                         styles.categoriesOverlay,
-                        { backgroundColor: theme.cardBackground },
+                        {
+                            backgroundColor: theme.cardBackground,
+                            borderColor: theme.border,
+                        },
                         categoriesAnimatedStyle,
                         { zIndex: 5, bottom: 10 + insets.bottom } // Ensure it's above other content but below full overlays if needed
                     ]}
@@ -296,7 +300,7 @@ export function UnifiedTabs() {
                             >
                                 <Text style={[
                                     styles.categoryPillText,
-                                    { color: category === cat.nameKey ? cat.color : theme.text }
+                                    { color: category === cat.nameKey ? cat.color : theme.textSecondary }
                                 ]}>{i18n.t(cat.nameKey)}</Text>
                             </TouchableOpacity>
                         ))}
@@ -306,20 +310,18 @@ export function UnifiedTabs() {
                 { }
                 <Animated.View style={[styles.tabBar, {
                     backgroundColor: theme.cardBackground,
-                    borderTopColor: theme.border,
+                    borderColor: theme.border,
                     zIndex: 10,
                     bottom: 10 + insets.bottom,
-                    // Remove opacity since we are translating it out
-                    // opacity: activeIndex === 0 ? 0 : 1, 
                     ...Platform.select({
                         ios: {
                             shadowColor: '#000',
-                            shadowOffset: { width: 0, height: -2 },
-                            shadowOpacity: 0.1,
-                            shadowRadius: 4,
+                            shadowOffset: { width: 0, height: 4 },
+                            shadowOpacity: 0.15,
+                            shadowRadius: 8,
                         },
                         android: {
-                            elevation: 12,
+                            elevation: 16,
                         }
                     })
                 }, tabBarAnimatedStyle]}>
@@ -358,8 +360,8 @@ const styles = StyleSheet.create({
         borderRadius: 30,
         alignItems: 'center',
         justifyContent: 'space-around',
+        borderWidth: 1,
         borderTopWidth: 0,
-
     },
     tabItem: {
         alignItems: 'center',
@@ -369,8 +371,15 @@ const styles = StyleSheet.create({
     },
     tabLabel: {
         fontSize: 10,
-        marginTop: 4,
-        fontWeight: '500',
+        marginTop: 2,
+        fontWeight: '600',
+        letterSpacing: 0.3,
+    },
+    activeDot: {
+        width: 4,
+        height: 4,
+        borderRadius: 2,
+        marginTop: 2,
     },
     categoriesOverlay: {
         position: 'absolute',
@@ -379,9 +388,8 @@ const styles = StyleSheet.create({
         right: 10,
         height: 75,
         zIndex: 5,
-        borderTopLeftRadius: 25,
-        borderTopRightRadius: 25,
-        borderWidth: 0,
+        borderRadius: 30,
+        borderWidth: 1,
         paddingTop: 8,
     },
     categoriesScroll: {
@@ -391,12 +399,11 @@ const styles = StyleSheet.create({
     },
     categoryPill: {
         paddingVertical: 8,
-
     },
     categoryPillText: {
         fontSize: 14,
-        fontWeight: '800',
+        fontWeight: '700',
         textTransform: 'uppercase',
-        letterSpacing: 0.5,
+        letterSpacing: 0.8,
     }
 });

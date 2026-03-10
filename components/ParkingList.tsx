@@ -6,75 +6,49 @@ import i18n from '@/i18n';
 import React, { useState } from 'react';
 import { ActivityIndicator, LayoutAnimation, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
-const ParkingCard = ({ parking, theme, onPress }: { parking: ParkingData, theme: any, onPress: () => void }) => {
-    
-    
-    
-    
-    
-
+const ParkingRow = ({ parking, theme, onPress, isLast }: { parking: ParkingData, theme: any, onPress: () => void, isLast: boolean }) => {
     const isOpen = parking.etat_descriptif === 'Ouvert';
-    const percentFree = parking.total > 0 ? (parking.libre / parking.total) : 0;
-    const occupancyPercent = 1 - percentFree;
+    const percentFree = parking.total > 0 ? (parking.libre / parking.total) : -1;
 
-    let statusColor = theme.success; 
-    let statusText = i18n.t('available');
+    // Determine the dot color based on availability rules:
+    // green (>60% available), orange (10-60% available), red (<10% available) or gray (no data)
+    let indicatorColor = theme.textMuted; // "gray (no data)" or closed
 
-    if (!isOpen) {
-        statusColor = theme.textSecondary;
-        statusText = i18n.t('closed');
-    } else if (parking.libre === 0) {
-        statusColor = theme.error; 
-        statusText = i18n.t('full');
-    } else if (percentFree < 0.1) {
-        statusColor = theme.error; 
-        statusText = i18n.t('nearlyFull');
-    } else if (percentFree < 0.3) {
-        statusColor = '#FFA500'; 
-        statusText = i18n.t('busy');
+    if (isOpen && percentFree !== -1) {
+        if (percentFree > 0.6) {
+            indicatorColor = theme.success; // "green (>60% available)"
+        } else if (percentFree >= 0.1) {
+            indicatorColor = theme.warning; // "orange (10-60% available)"
+        } else {
+            indicatorColor = theme.error; // "red (<10% available)"
+        }
     }
 
     return (
         <TouchableOpacity
             activeOpacity={0.7}
             onPress={onPress}
-            style={[styles.card, { backgroundColor: theme.cardBackground, borderColor: theme.border }]}
+            style={[
+                styles.row,
+                {
+                    backgroundColor: theme.surface,
+                    borderBottomWidth: isLast ? 0 : 1,
+                    borderBottomColor: theme.border
+                }
+            ]}
         >
-            <View style={styles.cardHeader}>
-                <Text style={[styles.cardTitle, { color: theme.text }]} numberOfLines={1}>
+            <View style={styles.rowMain}>
+                <View style={[styles.indicator, { backgroundColor: indicatorColor }]} />
+                <Text style={[styles.rowText, { color: theme.text }]} numberOfLines={1}>
                     {parking.nom_parking.replace('Parking ', '')}
                 </Text>
-                {isOpen && (
-                    <Text style={[styles.spotCount, { color: statusColor }]}>
-                        {parking.libre} {i18n.t('spots')}
-                    </Text>
-                )}
             </View>
 
-            {}
-            <View style={[styles.progressTrack, { backgroundColor: theme.border }]}>
-                <View
-                    style={[
-                        styles.progressBar,
-                        {
-                            width: `${occupancyPercent * 100}%`,
-                            backgroundColor: statusColor
-                        }
-                    ]}
-                />
-            </View>
-
-            <View style={styles.cardFooter}>
-                <View style={[styles.badge, { backgroundColor: statusColor + '20' }]}>
-                    <Text style={[styles.badgeText, { color: statusColor }]}>
-                        {isOpen ? statusText : i18n.t('closed')}
-                    </Text>
-                </View>
-                {!isOpen && (
-                    <Text style={[styles.closedText, { color: theme.textSecondary }]}>
-                        {parking.etat_descriptif}
-                    </Text>
-                )}
+            <View style={styles.rowInfo}>
+                <Text style={[styles.rowText, { color: isOpen ? theme.text : theme.textMuted, marginRight: 8 }]}>
+                    {isOpen ? `${parking.libre} ${i18n.t('spots')}` : i18n.t('closed')}
+                </Text>
+                <IconSymbol name="chevron.right" size={12} color={theme.textMuted} />
             </View>
         </TouchableOpacity>
     );
@@ -122,15 +96,13 @@ export function ParkingList({
         );
     }
 
-    
     const sortedData = [...data].sort((a, b) => {
         if (a.etat_descriptif === 'Ouvert' && b.etat_descriptif !== 'Ouvert') return -1;
         if (a.etat_descriptif !== 'Ouvert' && b.etat_descriptif === 'Ouvert') return 1;
         return 0;
     });
 
-    
-    const displayData = isExpanded ? sortedData : sortedData.slice(0, 6);
+    const displayData = isExpanded ? sortedData : sortedData.slice(0, 5);
 
     return (
         <View style={styles.container}>
@@ -152,15 +124,19 @@ export function ParkingList({
                 </TouchableOpacity>
             </View>
 
-            <View style={styles.grid}>
+            <View style={[styles.listContainer, { borderColor: theme.border }]}>
                 {displayData.map((parking, index) => (
-                    <View key={parking.nom_parking} style={styles.gridItem}>
-                        <ParkingCard parking={parking} theme={theme} onPress={() => onSelectParking(parking)} />
-                    </View>
+                    <ParkingRow
+                        key={parking.nom_parking}
+                        parking={parking}
+                        theme={theme}
+                        onPress={() => onSelectParking(parking)}
+                        isLast={index === displayData.length - 1}
+                    />
                 ))}
             </View>
 
-            {sortedData.length > 6 && (
+            {sortedData.length > 5 && (
                 <TouchableOpacity
                     style={[styles.expandButton, { backgroundColor: theme.cardBackground, borderColor: theme.border }]}
                     onPress={() => {
@@ -223,61 +199,36 @@ const styles = StyleSheet.create({
         fontSize: 14,
         fontWeight: '600',
     },
-    grid: {
-        flexDirection: 'row',
-        flexWrap: 'wrap',
-        marginHorizontal: -6, 
-    },
-    gridItem: {
-        width: '50%', 
-        padding: 6,
-    },
-    card: {
-        borderRadius: 16,
-        padding: 12,
-        borderWidth: 1,
-        gap: 10,
-    },
-    cardHeader: {
-        flexDirection: 'column',
-    },
-    cardTitle: {
-        fontSize: 14,
-        fontWeight: '600',
-        marginBottom: 2,
-    },
-    spotCount: {
-        fontSize: 13,
-        fontWeight: '700',
-    },
-    progressTrack: {
-        height: 6,
-        borderRadius: 3,
-        width: '100%',
+    listContainer: {
+        borderRadius: 12,
         overflow: 'hidden',
+        borderWidth: 1,
     },
-    progressBar: {
-        height: '100%',
-        borderRadius: 3,
-    },
-    cardFooter: {
+    row: {
         flexDirection: 'row',
-        justifyContent: 'space-between',
         alignItems: 'center',
+        justifyContent: 'space-between',
+        paddingVertical: 14,
+        paddingHorizontal: 16,
     },
-    badge: {
-        paddingHorizontal: 8,
-        paddingVertical: 4,
-        borderRadius: 6,
+    rowMain: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        flex: 1,
     },
-    badgeText: {
-        fontSize: 10,
-        fontWeight: '700',
-        textTransform: 'uppercase',
+    indicator: {
+        width: 8,
+        height: 8,
+        borderRadius: 4,
+        marginRight: 10,
     },
-    closedText: {
-        fontSize: 10,
-        fontStyle: 'italic',
+    rowText: {
+        fontSize: 14,
+        fontFamily: 'Outfit_400Regular',
+    },
+    rowInfo: {
+        flexDirection: 'row',
+        alignItems: 'center',
     },
     expandButton: {
         marginTop: 12,
@@ -288,7 +239,6 @@ const styles = StyleSheet.create({
         borderRadius: 12,
         borderWidth: 1,
         gap: 8,
-        marginHorizontal: 6,
     },
     expandText: {
         fontSize: 14,

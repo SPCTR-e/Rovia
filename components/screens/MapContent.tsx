@@ -1,4 +1,5 @@
 import { IconSymbol } from '@/components/ui/icon-symbol';
+import { getCategoryColor } from '@/constants/categoryColors';
 import { MaterialIcons } from '@expo/vector-icons';
 import polyline from '@mapbox/polyline';
 import Mapbox from '@rnmapbox/maps';
@@ -50,9 +51,9 @@ const CLOSED_STOP_NAMES = ["Langstross/Grand Rue", "Broglie", "Alt Winmärik-Vie
 const MAPBOX_ACCESS_TOKEN = 'pk.eyJ1Ijoic3BlY3RydWgiLCJhIjoiY21rNG5sNmh3MDF6NjNkczl5cGM3Ynl2aSJ9.U3vf9ao95WB7Xxx4n2Ihug';
 const ROUTE_COLORS = ['#FF4B4B', '#4B7BFF', '#4BFF4B', '#FFD700', '#FF00FF', '#00FFFF', '#FF8C00', '#8A2BE2'];
 
-const getCategoryColor = (type: string) => {
+const getMapCategoryColor = (type: string) => {
     if (type === 'batorama') return '#3498db';
-    return CATEGORIES.find(c => c.nameKey === type)?.color || '#888';
+    return getCategoryColor(type);
 };
 
 const getCategoryIcon = (type: string) => {
@@ -107,7 +108,7 @@ const PoiMarker = React.memo(({ item, nearestStop, onPress, isSelected, theme }:
 
                     <View style={[
                         styles.poiMarkerBody,
-                        { backgroundColor: getCategoryColor(item.type) }
+                        { backgroundColor: getMapCategoryColor(item.type) }
                     ]}>
                         <IconSymbol name={getCategoryIcon(item.type)} size={14} color="#FFF" />
                     </View>

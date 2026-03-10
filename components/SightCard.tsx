@@ -1,5 +1,5 @@
+import { getCategoryColor } from '@/constants/categoryColors';
 import { Colors } from '@/constants/theme';
-import { CATEGORIES } from '@/data/categories';
 import { Sight } from '@/data/sights';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { useFavorites } from '@/hooks/use-favorites';
@@ -7,7 +7,8 @@ import i18n, { tData } from '@/i18n';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import React, { useRef } from 'react';
-import { Animated, Image, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Animated, Image, Pressable, StyleSheet, View } from 'react-native';
+import { ThemedText } from './themed-text';
 
 type SightCardProps = {
     sight: Sight;
@@ -16,13 +17,13 @@ type SightCardProps = {
 };
 
 export const SightCard = React.memo(({ sight, onPress, style }: SightCardProps) => {
-    const colorScheme = useColorScheme();
-    const theme = Colors[colorScheme ?? 'light'];
+    const colorScheme = useColorScheme() ?? 'light';
+    const theme = Colors[colorScheme];
     const scale = useRef(new Animated.Value(1)).current;
 
     const handlePressIn = () => {
         Animated.spring(scale, {
-            toValue: 0.95,
+            toValue: 0.98,
             useNativeDriver: true,
         }).start();
     };
@@ -43,8 +44,18 @@ export const SightCard = React.memo(({ sight, onPress, style }: SightCardProps) 
         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     };
 
-    
-    const categoryColor = CATEGORIES.find(c => c.nameKey === sight.category)?.color || theme.tint;
+    const accentColor = getCategoryColor(sight.category);
+
+    // Shadow in dark mode only as per rules
+    const shadowStyle = colorScheme === 'dark' ? {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.3,
+        shadowRadius: 8,
+        elevation: 5,
+    } : {
+        elevation: 0, // No heavy visible borders/shadows in light mode by default
+    };
 
     return (
         <Pressable
@@ -57,26 +68,39 @@ export const SightCard = React.memo(({ sight, onPress, style }: SightCardProps) 
                 styles.card,
                 {
                     backgroundColor: theme.cardBackground,
-                    borderColor: theme.border,
-                    transform: [{ scale }]
+                    transform: [{ scale }],
+                    ...shadowStyle
                 }
             ]}>
-                <View style={styles.imageContainer}>
-                    <Image source={sight.image} style={styles.image} resizeMode="cover" />
-                    <View style={[styles.categoryBadge, { backgroundColor: categoryColor }]}>
-                        <Text style={styles.categoryText}>{i18n.t(sight.category).toUpperCase()}</Text>
-                    </View>
-                    <Pressable
-                        onPress={handleToggleFavorite}
-                        style={styles.favoriteBadge}
-                    >
-                        <Ionicons name={isFav ? "heart" : "heart-outline"} size={18} color={isFav ? "#FF4B4B" : "#FFF"} />
-                    </Pressable>
-                </View>
+                {/* 4px Category Accent Border */}
+                <View style={[styles.accentBorder, { backgroundColor: accentColor }]} />
 
-                <View style={styles.content}>
-                    <Text style={[styles.title, { color: theme.text }]} numberOfLines={2}>{tData(sight, 'name')}</Text>
-                    {}
+                <View style={styles.innerContainer}>
+                    <View style={styles.imageContainer}>
+                        <Image
+                            source={sight.image}
+                            style={styles.image}
+                            resizeMode="cover"
+                        />
+                        <Pressable
+                            onPress={handleToggleFavorite}
+                            style={styles.favoriteBadge}
+                        >
+                            <Ionicons name={isFav ? "heart" : "heart-outline"} size={20} color={isFav ? "#FF4B4B" : "#FFF"} />
+                        </Pressable>
+                    </View>
+
+                    <View style={styles.content}>
+                        <ThemedText style={styles.categoryLabel} muted>
+                            {i18n.t(sight.category).toUpperCase()}
+                        </ThemedText>
+                        <ThemedText style={styles.title} variant="body" numberOfLines={2}>
+                            {tData(sight, 'name')}
+                        </ThemedText>
+                        <ThemedText style={styles.subtitle} muted numberOfLines={1}>
+                            {tData(sight, 'shortDescription')}
+                        </ThemedText>
+                    </View>
                 </View>
             </Animated.View>
         </Pressable>
@@ -87,60 +111,55 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         marginBottom: 16,
-        marginHorizontal: 8, 
+        marginHorizontal: 8,
     },
     card: {
-        borderRadius: 16,
+        flex: 1,
+        borderRadius: 10,
         overflow: 'hidden',
-        borderWidth: 1,
-        elevation: 3,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 4,
-        height: 240, 
+        flexDirection: 'row',
+        height: 240,
+    },
+    accentBorder: {
+        width: 4,
+        height: '100%',
+    },
+    innerContainer: {
+        flex: 1,
     },
     imageContainer: {
-        height: '70%', 
+        height: '65%',
         width: '100%',
         position: 'relative',
+        overflow: 'hidden',
     },
     image: {
         width: '100%',
         height: '100%',
     },
-    categoryBadge: {
-        position: 'absolute',
-        top: 8,
-        right: 8,
-        paddingHorizontal: 8,
-        paddingVertical: 4,
-        borderRadius: 8,
-        elevation: 2,
-    },
-    categoryText: {
-        fontSize: 9,
-        fontWeight: '800',
-        color: '#222',
-        letterSpacing: 0.5,
-    },
     content: {
         padding: 12,
-        height: '30%',
+        height: '35%',
         justifyContent: 'center',
     },
+    categoryLabel: {
+        fontSize: 12,
+        marginBottom: 2,
+    },
     title: {
-        fontSize: 16,
-        fontWeight: '700',
-        textAlign: 'center', 
-        fontFamily: 'System',
+        fontSize: 17,
+        lineHeight: 22,
+    },
+    subtitle: {
+        fontSize: 12,
+        marginTop: 2,
     },
     favoriteBadge: {
         position: 'absolute',
-        bottom: 12,
-        right: 12,
+        top: 10,
+        right: 10,
         backgroundColor: 'rgba(0,0,0,0.3)',
-        padding: 6,
+        padding: 8,
         borderRadius: 20,
     }
 });
