@@ -875,19 +875,24 @@ export const MapContent = ({ theme, onNavigate, onClose, router, isFocused, favo
                             position: 'absolute',
                             bottom: 90 + insets.bottom,
                             right: 20,
-                            width: 40,
-                            height: 40,
+                            width: 'auto',
+                            height: 44,
+                            paddingHorizontal: 14,
                             borderRadius: 8,
                             backgroundColor: Colors[colorScheme].cardBackground,
                             borderWidth: 1,
                             borderColor: Colors[colorScheme].border,
+                            flexDirection: 'row',
                             alignItems: 'center',
                             justifyContent: 'center',
+                            gap: 6,
                             zIndex: 100
                         }}
                         onPress={() => setLegendVisible(!legendVisible)}
                     >
+                        <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: '#C9524A' }} />
                         <IconSymbol name="line.3.horizontal.decrease.circle" size={24} color={Colors[colorScheme].text} />
+                        <Text style={{ fontFamily: 'Outfit_400Regular', fontWeight: '400', fontSize: 12, color: Colors[colorScheme].text, letterSpacing: 0.06 }}>Filter</Text>
                     </TouchableOpacity>
                 </>
             )}
