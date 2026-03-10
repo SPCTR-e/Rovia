@@ -104,19 +104,19 @@ export function GuideContent({ onClose }: { onClose?: () => void }) {
                 <GuideSection title={i18n.t('mainTicketTypes')} icon="tram.fill">
                     <View style={styles.priceRow}>
                         <Text style={[styles.priceLabel, { color: theme.text }]}>{i18n.t('singleTicket')}</Text>
-                        <Text style={styles.priceValue}>1.90 €</Text>
+                        <Text style={[styles.priceValue, { color: theme.text }]}>1.90 €</Text>
                     </View>
                     <View style={styles.priceRow}>
                         <Text style={[styles.priceLabel, { color: theme.text }]}>{i18n.t('dayIndividual')}</Text>
-                        <Text style={styles.priceValue}>4.60 €</Text>
+                        <Text style={[styles.priceValue, { color: theme.text }]}>4.60 €</Text>
                     </View>
                     <View style={styles.priceRow}>
                         <Text style={[styles.priceLabel, { color: theme.text }]}>{i18n.t('dayTrio')}</Text>
-                        <Text style={styles.priceValue}>10.20 €</Text>
+                        <Text style={[styles.priceValue, { color: theme.text }]}>10.20 €</Text>
                     </View>
                     <View style={styles.priceRow}>
                         <Text style={[styles.priceLabel, { color: theme.text }]}>{i18n.t('threeDayIndividual')}</Text>
-                        <Text style={styles.priceValue}>10.20 €</Text>
+                        <Text style={[styles.priceValue, { color: theme.text }]}>10.20 €</Text>
                     </View>
                     <Text style={[styles.priceNote, { color: theme.textSecondary }]}>
                         {i18n.t('ticketFeeDetailed')}
@@ -164,8 +164,8 @@ export function GuideContent({ onClose }: { onClose?: () => void }) {
 const styles = StyleSheet.create({
     sheetContainer: {
         flex: 1,
-        borderTopLeftRadius: 32,
-        borderTopRightRadius: 32,
+        borderTopLeftRadius: 8,
+        borderTopRightRadius: 8,
         overflow: 'hidden',
     },
     handleWrapper: {
@@ -196,7 +196,7 @@ const styles = StyleSheet.create({
     section: {
         marginVertical: 8,
         padding: 16,
-        borderRadius: 20,
+        borderRadius: 8,
         borderWidth: 1,
     },
     sectionHeader: {
@@ -244,7 +244,6 @@ const styles = StyleSheet.create({
     priceValue: {
         fontSize: 15,
         fontWeight: '700',
-        color: '#F68002',
     },
     priceNote: {
         marginTop: 10,

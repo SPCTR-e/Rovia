@@ -986,7 +986,7 @@ export const MapContent = ({ theme, onNavigate, onClose, router, isFocused, favo
             {/* 5. StopDetail Card */}
             {
                 selectedStop && !selectedStop.isBatorama && (
-                    <Animated.View entering={SlideInDown} exiting={FadeOutDown} style={[styles.detailCard, { backgroundColor: theme.cardBackground, zIndex: 1000, bottom: 90 + insets.bottom }]}>
+                    <Animated.View entering={SlideInDown} exiting={FadeOutDown} style={[styles.detailCard, { backgroundColor: theme.cardBackground, zIndex: 1000, bottom: 75 + insets.bottom }]}>
                         <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
                             <Text style={[styles.detailTitle, { color: theme.text, flex: 1 }]}>{selectedStop.name}</Text>
                             <TouchableOpacity style={[styles.closeLineButton, { backgroundColor: theme.border }]} onPress={() => setSelectedStop(null)}>
@@ -995,7 +995,7 @@ export const MapContent = ({ theme, onNavigate, onClose, router, isFocused, favo
                         </View>
 
                         {/* Line Badges */}
-                        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginBottom: 2 }}>
+                        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 5, marginBottom: 1 }}>
                             {(() => {
                                 let lines = selectedStop.lines;
                                 if (typeof lines === 'string') {
@@ -1012,10 +1012,10 @@ export const MapContent = ({ theme, onNavigate, onClose, router, isFocused, favo
                                             onPress={() => lineData && setSelectedLineId(isSelected ? null : lineData.id)}
                                             style={{
                                                 backgroundColor: color,
-                                                paddingHorizontal: 8,
-                                                paddingVertical: 4,
-                                                borderRadius: 6,
-                                                minWidth: 24,
+                                                paddingHorizontal: 6,
+                                                paddingVertical: 3,
+                                                borderRadius: 4,
+                                                minWidth: 28,
                                                 alignItems: 'center',
                                                 opacity: (selectedLineId === null || isSelected) ? 1 : 0.6
                                             }}
