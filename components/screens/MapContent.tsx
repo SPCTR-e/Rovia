@@ -1110,48 +1110,51 @@ export const MapContent = ({ theme, onNavigate, onClose, router, isFocused, favo
 
             {/* 6. Layers Menu (Floating) */}
             {layersVisible && (
-                <Animated.View entering={SlideInDown} exiting={SlideOutDown} style={{
+                <View style={{
                     position: 'absolute',
                     top: 210,
                     right: 10,
-                    backgroundColor: Colors[colorScheme].cardBackground,
-                    borderRadius: 10,
-                    borderWidth: 1,
-                    borderColor: Colors[colorScheme].border,
-                    padding: 14,
-                    gap: 10,
                     width: 200,
                     zIndex: 100
                 }}>
-                    <Text style={{ fontFamily: 'Outfit_400Regular', fontSize: 9, fontWeight: '400', color: Colors[colorScheme].textSecondary, letterSpacing: 0.12, textTransform: 'uppercase', marginBottom: 4 }}>MAP LAYERS</Text>
-                    <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
-                        <Text style={{ fontFamily: 'Outfit_400Regular', fontSize: 12, fontWeight: '300', color: Colors[colorScheme].text }}>Lines & Batorama</Text>
-                        <Switch
-                            value={isLayersValues.mainLines && isLayersValues.batorama}
-                            onValueChange={(val) => setIsLayersValues(v => ({ ...v, mainLines: val, batorama: val }))}
-                            trackColor={{ false: Colors[colorScheme].border, true: '#C9524A' }}
-                            thumbColor="#F5F0EB"
-                        />
-                    </View>
-                    <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
-                        <Text style={{ fontFamily: 'Outfit_400Regular', fontSize: 12, fontWeight: '300', color: Colors[colorScheme].text }}>Parking</Text>
-                        <Switch
-                            value={isLayersValues.parking}
-                            onValueChange={(val) => setIsLayersValues(v => ({ ...v, parking: val }))}
-                            trackColor={{ false: Colors[colorScheme].border, true: '#C9524A' }}
-                            thumbColor="#F5F0EB"
-                        />
-                    </View>
-                    <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
-                        <Text style={{ fontFamily: 'Outfit_400Regular', fontSize: 12, fontWeight: '300', color: Colors[colorScheme].text }}>Christmas Mode</Text>
-                        <Switch
-                            value={isSeasonalMode}
-                            onValueChange={(val) => setIsSeasonalMode(val)}
-                            trackColor={{ false: Colors[colorScheme].border, true: '#C9524A' }}
-                            thumbColor="#F5F0EB"
-                        />
-                    </View>
-                </Animated.View>
+                    <Animated.View entering={SlideInDown} exiting={SlideOutDown} style={{
+                        backgroundColor: Colors[colorScheme].cardBackground,
+                        borderRadius: 10,
+                        borderWidth: 1,
+                        borderColor: Colors[colorScheme].border,
+                        padding: 14,
+                        gap: 10,
+                    }}>
+                        <Text style={{ fontFamily: 'Outfit_400Regular', fontSize: 9, fontWeight: '400', color: Colors[colorScheme].textSecondary, letterSpacing: 0.12, textTransform: 'uppercase', marginBottom: 4 }}>MAP LAYERS</Text>
+                        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
+                            <Text style={{ fontFamily: 'Outfit_400Regular', fontSize: 12, fontWeight: '300', color: Colors[colorScheme].text }}>Lines & Batorama</Text>
+                            <Switch
+                                value={isLayersValues.mainLines && isLayersValues.batorama}
+                                onValueChange={(val) => setIsLayersValues(v => ({ ...v, mainLines: val, batorama: val }))}
+                                trackColor={{ false: Colors[colorScheme].border, true: '#C9524A' }}
+                                thumbColor="#F5F0EB"
+                            />
+                        </View>
+                        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
+                            <Text style={{ fontFamily: 'Outfit_400Regular', fontSize: 12, fontWeight: '300', color: Colors[colorScheme].text }}>Parking</Text>
+                            <Switch
+                                value={isLayersValues.parking}
+                                onValueChange={(val) => setIsLayersValues(v => ({ ...v, parking: val }))}
+                                trackColor={{ false: Colors[colorScheme].border, true: '#C9524A' }}
+                                thumbColor="#F5F0EB"
+                            />
+                        </View>
+                        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
+                            <Text style={{ fontFamily: 'Outfit_400Regular', fontSize: 12, fontWeight: '300', color: Colors[colorScheme].text }}>Christmas Mode</Text>
+                            <Switch
+                                value={isSeasonalMode}
+                                onValueChange={(val) => setIsSeasonalMode(val)}
+                                trackColor={{ false: Colors[colorScheme].border, true: '#C9524A' }}
+                                thumbColor="#F5F0EB"
+                            />
+                        </View>
+                    </Animated.View>
+                </View>
             )}
         </SafeAreaView >
     );
