@@ -10,8 +10,6 @@ import { useMemo, useState } from 'react';
 import { FlatList, StyleSheet, Text, TextInput, View } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { getCategoryColor } from '@/constants/categoryColors';
-import { CATEGORIES } from '@/data/categories';
 
 export type ExploreContentProps = {
     category: string;
@@ -120,32 +118,7 @@ export function ExploreContent({ category, setCategory }: ExploreContentProps) {
                             </View>
                         </View>
 
-                        <View style={styles.categoriesRow}>
-                            {CATEGORIES.map(cat => {
-                                const isActive = category === cat.nameKey;
-                                const color = getCategoryColor(cat.nameKey);
 
-                                return (
-                                    <View
-                                        key={cat.id}
-                                        style={[
-                                            styles.categoryPill,
-                                            {
-                                                borderColor: color,
-                                                backgroundColor: isActive ? color : 'transparent'
-                                            }
-                                        ]}
-                                    >
-                                        <Text style={[
-                                            styles.categoryPillText,
-                                            { color: isActive ? '#F5F0EB' : color }
-                                        ]}>
-                                            {i18n.t(cat.nameKey)}
-                                        </Text>
-                                    </View>
-                                );
-                            })}
-                        </View>
                     </View>
                 }
                 ListEmptyComponent={
