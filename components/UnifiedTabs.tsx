@@ -149,6 +149,7 @@ export function UnifiedTabs() {
 
     useEffect(() => {
         if (pathname === '/batorama') return;
+        if (pathname.startsWith('/sight/')) return;
 
         // Restore saved category when coming back to the main tabs (no specific category parameter)
         if (!params.category && pathname === '/') {
