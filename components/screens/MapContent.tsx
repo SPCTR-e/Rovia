@@ -1,3 +1,4 @@
+import { GlassView } from '@/components/ui/GlassView';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { getCategoryColor } from '@/constants/categoryColors';
 import { Colors } from '@/constants/theme';
@@ -9,8 +10,6 @@ import distance from '@turf/distance';
 import { lineString, point } from '@turf/helpers';
 import lineSlice from '@turf/line-slice';
 import nearestPointOnLine from '@turf/nearest-point-on-line';
-import { BlurView } from 'expo-blur';
-import { GlassView } from '@/components/ui/GlassView';
 import * as Location from 'expo-location';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
@@ -835,7 +834,7 @@ export const MapContent = ({ theme, onNavigate, onClose, router, isFocused, favo
             {/* 3. Bottom Category Filters (Map Legend) */}
             {!selectedPoi && !selectedStop && !selectedParking && (
                 <View style={[styles.filterContainer, { bottom: 20 + insets.bottom, alignItems: 'center' }]}>
-                    <GlassView style={styles.legendBlurView}>
+                    <GlassView style={styles.legendBlurView} blurAmount={25}>
                         <View style={styles.legendInnerView}>
                             {['sights', 'restaurants', 'museums'].map((f, i) => {
                                 const isActive = mapFilter === f && isLayersValues.landmarks;
