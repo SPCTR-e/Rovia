@@ -106,10 +106,10 @@ export const TransportContent = React.memo(React.forwardRef<TransportRef>((props
                         {i18n.t('transportIntro')}
                     </Text>
                     <Text style={[styles.subtitle, { color: theme.text, marginTop: 12 }]}>{i18n.t('tickets')}</Text>
-                    <View style={styles.ticketRow}><Text style={[styles.ticketLabel, { color: theme.text }]}>{i18n.t('singleTicket')}</Text><Text style={styles.ticketPrice}>1.90 €</Text></View>
-                    <View style={styles.ticketRow}><Text style={[styles.ticketLabel, { color: theme.text }]}>{i18n.t('dayIndividual')}</Text><Text style={styles.ticketPrice}>4.60 €</Text></View>
-                    <View style={styles.ticketRow}><Text style={[styles.ticketLabel, { color: theme.text }]}>{i18n.t('dayTrio')}</Text><Text style={styles.ticketPrice}>10.20 €</Text></View>
-                    <View style={styles.ticketRow}><Text style={[styles.ticketLabel, { color: theme.text }]}>{i18n.t('threeDayIndividual')}</Text><Text style={styles.ticketPrice}>10.20 €</Text></View>
+                    <View style={styles.ticketRow}><Text style={[styles.ticketLabel, { color: theme.text }]}>{i18n.t('singleTicket')}</Text><Text style={[styles.ticketPrice, { color: theme.text }]}>1.90 €</Text></View>
+                    <View style={styles.ticketRow}><Text style={[styles.ticketLabel, { color: theme.text }]}>{i18n.t('dayIndividual')}</Text><Text style={[styles.ticketPrice, { color: theme.text }]}>4.60 €</Text></View>
+                    <View style={styles.ticketRow}><Text style={[styles.ticketLabel, { color: theme.text }]}>{i18n.t('dayTrio')}</Text><Text style={[styles.ticketPrice, { color: theme.text }]}>10.20 €</Text></View>
+                    <View style={styles.ticketRow}><Text style={[styles.ticketLabel, { color: theme.text }]}>{i18n.t('threeDayIndividual')}</Text><Text style={[styles.ticketPrice, { color: theme.text }]}>10.20 €</Text></View>
                     <View style={styles.ticketInfo}>
                         <IconSymbol name="info.circle" size={14} color={theme.icon} style={{ marginRight: 6, marginTop: 2 }} />
                         <View style={{ flex: 1 }}>
