@@ -834,7 +834,7 @@ export const MapContent = ({ theme, onNavigate, onClose, router, isFocused, favo
             {/* 3. Bottom Category Filters (Map Legend) */}
             {!selectedPoi && !selectedStop && !selectedParking && (
                 <View style={[styles.filterContainer, { bottom: 20 + insets.bottom, alignItems: 'center' }]}>
-                    <GlassView style={styles.legendBlurView} blurAmount={25}>
+                    <GlassView style={styles.legendBlurView} blurAmount={30}>
                         <View style={styles.legendInnerView}>
                             {['sights', 'restaurants', 'museums'].map((f, i) => {
                                 const isActive = mapFilter === f && isLayersValues.landmarks;
