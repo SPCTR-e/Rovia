@@ -835,7 +835,7 @@ export const MapContent = ({ theme, onNavigate, onClose, router, isFocused, favo
             {!selectedPoi && !selectedStop && !selectedParking && (
                 <>
                     {legendVisible && (
-                        <View style={{ position: 'absolute', bottom: 70 + insets.bottom, right: 20, zIndex: 100 }}>
+                        <View style={{ position: 'absolute', bottom: 140 + insets.bottom, right: 20, zIndex: 100 }}>
                             <View style={[styles.legendBlurView, {
                                 backgroundColor: Colors[colorScheme].cardBackground,
                                 borderColor: Colors[colorScheme].border,
@@ -873,7 +873,7 @@ export const MapContent = ({ theme, onNavigate, onClose, router, isFocused, favo
                     <TouchableOpacity
                         style={{
                             position: 'absolute',
-                            bottom: 20 + insets.bottom,
+                            bottom: 90 + insets.bottom,
                             right: 20,
                             width: 40,
                             height: 40,
