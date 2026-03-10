@@ -839,10 +839,11 @@ export const MapContent = ({ theme, onNavigate, onClose, router, isFocused, favo
                             <View style={[styles.legendBlurView, {
                                 backgroundColor: Colors[colorScheme].cardBackground,
                                 borderColor: Colors[colorScheme].border,
-                                borderRadius: 8,
-                                padding: 10,
+                                borderRadius: 10,
+                                padding: 14,
                                 borderWidth: 1
                             }]}>
+                                <Text style={{ fontFamily: 'Outfit_400Regular', fontSize: 9, fontWeight: '400', color: Colors[colorScheme].textSecondary, letterSpacing: 0.12, textTransform: 'uppercase', marginBottom: 4 }}>MAP LEGEND</Text>
                                 {['sights', 'restaurants', 'museums'].map((f, i) => {
                                     const isActive = mapFilter === f && isLayersValues.landmarks;
 
@@ -858,9 +859,9 @@ export const MapContent = ({ theme, onNavigate, onClose, router, isFocused, favo
                                             setSelectedPoi(null);
                                             setSelectedStop(null);
                                             setSelectedParking(null);
-                                        }} style={{ flexDirection: 'row', alignItems: 'center', marginBottom: i === 2 ? 0 : 6 }}>
-                                            <View style={{ width: 7, height: 7, borderRadius: 3.5, backgroundColor: getCategoryColor(f), marginRight: 6, opacity: isActive ? 1 : 0.5 }} />
-                                            <Text style={{ fontSize: 9, fontWeight: '200', color: Colors[colorScheme].textSecondary }}>
+                                        }} style={{ flexDirection: 'row', alignItems: 'center', marginBottom: i === 2 ? 0 : 10 }}>
+                                            <View style={{ width: 10, height: 10, borderRadius: 5, backgroundColor: getCategoryColor(f), marginRight: 6, opacity: isActive ? 1 : 0.5 }} />
+                                            <Text style={{ fontSize: 12, fontWeight: '300', color: Colors[colorScheme].textSecondary, letterSpacing: 0.08 }}>
                                                 {i18n.t(f as any).toUpperCase()}
                                             </Text>
                                         </TouchableOpacity>
