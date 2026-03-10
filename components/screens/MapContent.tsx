@@ -986,7 +986,7 @@ export const MapContent = ({ theme, onNavigate, onClose, router, isFocused, favo
             {/* 5. StopDetail Card */}
             {
                 selectedStop && !selectedStop.isBatorama && (
-                    <Animated.View entering={SlideInDown} exiting={FadeOutDown} style={[styles.detailCard, { backgroundColor: theme.cardBackground, zIndex: 1000, bottom: 145 + insets.bottom }]}>
+                    <Animated.View entering={SlideInDown} exiting={FadeOutDown} style={[styles.detailCard, { backgroundColor: theme.cardBackground, zIndex: 1000, bottom: 75 + insets.bottom }]}>
                         <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
                             <Text style={[styles.detailTitle, { color: theme.text, flex: 1 }]}>{selectedStop.name}</Text>
                             <TouchableOpacity style={[styles.closeLineButton, { backgroundColor: theme.border }]} onPress={() => setSelectedStop(null)}>
@@ -1074,7 +1074,7 @@ export const MapContent = ({ theme, onNavigate, onClose, router, isFocused, favo
             {/* Parking Details */}
             {
                 selectedParking && (
-                    <Animated.View entering={SlideInDown} exiting={FadeOutDown} style={[styles.detailCard, { backgroundColor: theme.cardBackground, bottom: 30 + insets.bottom }]}>
+                    <Animated.View entering={SlideInDown} exiting={FadeOutDown} style={[styles.detailCard, { backgroundColor: theme.cardBackground, bottom: 70 + insets.bottom }]}>
                         <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
                             <Text style={[styles.detailTitle, { color: theme.text, flex: 1 }]}>{selectedParking.nom_parking?.replace('Parking ', '')}</Text>
                             <TouchableOpacity style={[styles.closeLineButton, { backgroundColor: theme.border }]} onPress={() => setSelectedParking(null)}>
