@@ -25,8 +25,7 @@ import {
 import Animated, {
     FadeOutDown,
     SlideInDown,
-    SlideInLeft,
-    SlideOutDown
+    SlideInLeft
 } from 'react-native-reanimated';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -1112,12 +1111,12 @@ export const MapContent = ({ theme, onNavigate, onClose, router, isFocused, favo
             {layersVisible && (
                 <View style={{
                     position: 'absolute',
-                    top: 270,
-                    right: 0,
+                    top: 260,
+                    right: 20,
                     width: 180,
                     zIndex: 100
                 }}>
-                    <Animated.View entering={SlideInDown} exiting={SlideOutDown} style={{
+                    <View style={{
                         backgroundColor: Colors[colorScheme].cardBackground,
                         borderRadius: 10,
                         borderWidth: 1,
@@ -1153,7 +1152,7 @@ export const MapContent = ({ theme, onNavigate, onClose, router, isFocused, favo
                                 thumbColor="#F5F0EB"
                             />
                         </View>
-                    </Animated.View>
+                    </View>
                 </View>
             )}
         </SafeAreaView >
