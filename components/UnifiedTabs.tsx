@@ -38,6 +38,8 @@ const MemoizedItinerary = React.memo(ItineraryContent);
 const MemoizedFullMap = React.memo(MapContent);
 
 
+let savedExploreCategory = 'sights';
+
 export function UnifiedTabs() {
     const router = useRouter();
     const pathname = usePathname();
@@ -53,7 +55,12 @@ export function UnifiedTabs() {
         if (params.category === 'map') return 0;
         return 1;
     });
-    const [category, setCategory] = useState<string>('sights');
+    const [category, setCategory] = useState<string>(savedExploreCategory);
+
+    const handleSetCategory = (cat: string) => {
+        savedExploreCategory = cat;
+        setCategory(cat);
+    };
     const [transportLoaded, setTransportLoaded] = useState(false);
     const [pendingMapOpen, setPendingMapOpen] = useState(false);
     const [locale, setLocale] = useState(i18n.locale);
@@ -143,22 +150,13 @@ export function UnifiedTabs() {
     useEffect(() => {
         if (pathname === '/batorama') return;
 
-        if (params.category === 'explore') {
-            const index = 2;
-            if (index !== activeIndexRef.current) {
-                translateX.value = withSpring(-index * SCREEN_WIDTH, {
-                    damping: 25,
-                    stiffness: 150,
-                    mass: 0.8
-                });
-                updateActiveTab(index);
-            }
-            setCategory(params.returnCategory || 'sights');
-            return;
+        // Restore saved category when coming back to the main tabs (no specific category parameter)
+        if (!params.category && pathname === '/') {
+            setCategory(savedExploreCategory);
         }
 
         navigateTo(pathname, params.category as string);
-    }, [pathname, params.category, params.returnCategory, navigateTo]);
+    }, [pathname, params.category, navigateTo]);
 
     const pan = Gesture.Pan()
         .enabled(activeIndex !== 0)
@@ -292,7 +290,7 @@ export function UnifiedTabs() {
                         </View>
                         <View style={{ width: SCREEN_WIDTH }}>
                             {/* Explore */}
-                            <MemoizedExplore key={`explore-${locale}`} category={category} setCategory={setCategory} />
+                            <MemoizedExplore key={`explore-${locale}`} category={category} setCategory={handleSetCategory} />
                         </View>
                         <View style={{ width: SCREEN_WIDTH }}>
                             <MemoizedItinerary key={`itinerary-${locale}`} />
@@ -328,7 +326,7 @@ export function UnifiedTabs() {
                                             backgroundColor: isActive ? catColor : theme.cardBackground
                                         }
                                     ]}
-                                    onPress={() => setCategory(category === cat.nameKey ? '' : cat.nameKey)}
+                                    onPress={() => handleSetCategory(category === cat.nameKey ? '' : cat.nameKey)}
                                 >
                                     <Text style={[
                                         styles.categoryPillText,
