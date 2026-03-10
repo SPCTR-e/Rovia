@@ -13,6 +13,6 @@ jobs:
           node-version: 20
       - run: npm install
       - name: Publish update
-        run: CI=1 npx eas-cli update --branch development --message "auto update"
+        run: CI=1 npx eas-cli update --branch development --message "auto update" --platform android --platform ios
         env:
           EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
