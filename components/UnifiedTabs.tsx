@@ -295,7 +295,7 @@ export function UnifiedTabs() {
                     style={[
                         styles.categoriesOverlay,
                         categoriesAnimatedStyle,
-                        { zIndex: 5, bottom: 10 + insets.bottom, backgroundColor: theme.cardBackground }
+                        { zIndex: 5, bottom: 10 + insets.bottom, backgroundColor: 'transparent' }
                     ]}
                 >
                     <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.categoriesScroll}>
@@ -306,7 +306,7 @@ export function UnifiedTabs() {
                                     styles.categoryPill,
                                     {
                                         borderColor: cat.color,
-                                        backgroundColor: category === cat.nameKey ? cat.color : 'transparent'
+                                        backgroundColor: 'transparent'
                                     }
                                 ]}
                                 onPress={() => setCategory(category === cat.nameKey ? '' : cat.nameKey)}
