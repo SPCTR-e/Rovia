@@ -131,14 +131,14 @@ export function ExploreContent({ category, setCategory }: ExploreContentProps) {
                                         style={[
                                             styles.categoryPill,
                                             {
-                                                borderColor: isActive ? color : theme.border,
-                                                backgroundColor: isActive ? hexToRgba(color, 0.10) : 'transparent'
+                                                borderColor: color,
+                                                backgroundColor: isActive ? color : 'transparent'
                                             }
                                         ]}
                                     >
                                         <Text style={[
                                             styles.categoryPillText,
-                                            { color: isActive ? color : theme.textSecondary }
+                                            { color: isActive ? '#F5F0EB' : color }
                                         ]}>
                                             {i18n.t(cat.nameKey)}
                                         </Text>
@@ -237,13 +237,17 @@ const styles = StyleSheet.create({
     categoryPill: {
         borderWidth: 1,
         borderRadius: 6,
-        paddingVertical: 5,
-        paddingHorizontal: 14,
+        paddingHorizontal: 12,
+        paddingVertical: 6,
+        height: 32,
+        alignItems: 'center',
+        justifyContent: 'center',
     },
     categoryPillText: {
-        fontSize: 10,
-        fontWeight: '700',
-        letterSpacing: 0.10,
+        fontFamily: 'Outfit_400Regular',
+        fontSize: 11,
+        fontWeight: '600',
+        letterSpacing: 0.08,
         textTransform: 'uppercase',
     },
     emptyContainer: {
