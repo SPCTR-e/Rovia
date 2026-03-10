@@ -1112,9 +1112,9 @@ export const MapContent = ({ theme, onNavigate, onClose, router, isFocused, favo
             {layersVisible && (
                 <View style={{
                     position: 'absolute',
-                    top: 210,
-                    right: 10,
-                    width: 200,
+                    top: 270,
+                    right: 0,
+                    width: 180,
                     zIndex: 100
                 }}>
                     <Animated.View entering={SlideInDown} exiting={SlideOutDown} style={{
