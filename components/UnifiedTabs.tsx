@@ -41,7 +41,7 @@ const MemoizedFullMap = React.memo(MapContent);
 export function UnifiedTabs() {
     const router = useRouter();
     const pathname = usePathname();
-    const params = useLocalSearchParams<{ category: string; poiId?: string }>();
+    const params = useLocalSearchParams<{ category: string; poiId?: string; returnCategory?: string }>();
 
     const colorScheme = useColorScheme();
     const theme = Colors[colorScheme ?? 'light'];
@@ -142,8 +142,23 @@ export function UnifiedTabs() {
 
     useEffect(() => {
         if (pathname === '/batorama') return;
+
+        if (params.category === 'explore') {
+            const index = 2;
+            if (index !== activeIndexRef.current) {
+                translateX.value = withSpring(-index * SCREEN_WIDTH, {
+                    damping: 25,
+                    stiffness: 150,
+                    mass: 0.8
+                });
+                updateActiveTab(index);
+            }
+            setCategory(params.returnCategory || 'sights');
+            return;
+        }
+
         navigateTo(pathname, params.category as string);
-    }, [pathname, params.category, navigateTo]);
+    }, [pathname, params.category, params.returnCategory, navigateTo]);
 
     const pan = Gesture.Pan()
         .enabled(activeIndex !== 0)
