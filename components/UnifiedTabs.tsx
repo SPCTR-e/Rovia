@@ -413,10 +413,8 @@ const styles = StyleSheet.create({
         left: 10,
         right: 10,
         height: 56,
-        backgroundColor: 'rgba(28, 26, 24, 0.45)',
+        backgroundColor: 'transparent',
         borderRadius: 12,
-        borderWidth: 1,
-        borderColor: 'rgba(255, 255, 255, 0.07)',
         overflow: 'hidden',
     },
     categoriesScroll: {
