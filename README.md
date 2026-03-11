@@ -1,50 +1,22 @@
-# Welcome to your Expo app 👋
+# Rovia
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+> A universal city companion, born from a real need.
 
-## Get started
+## What is Rovia?
 
-1. Install dependencies
+Rovia started as a small personal project back in 2025 — a simple helper app to streamline day-to-day work at a hotel. What began as a local convenience tool gradually evolved into something much bigger: a standalone, universal platform covering the core essentials every tourist needs.
 
-   ```bash
-   npm install
-   ```
+It's practical, lightweight, and built with real-world use in mind.
 
-2. Start the app
+## Contributing
 
-   ```bash
-   npx expo start
-   ```
+Rovia is open to contributions! Whether you want to report a bug, suggest a feature, or dive into the code — you're welcome here.
 
-In the output, you'll find options to open the app in a
+Feel free to reach out directly:
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+- **Discord:** @spectra_vv
+- **Twitter / X:** @_spectravv
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+## License & Usage
 
-## Get a fresh project
-
-When you're ready, run:
-
-```bash
-npm run reset-project
-```
-
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
-
-## Learn more
-
-To learn more about developing your project with Expo, look at the following resources:
-
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
-
-## Join the community
-
-Join our community of developers creating universal apps.
-
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+Please respect the work that has gone into this project — **do not copy, redistribute, or repurpose this codebase without explicit permission.** If you're interested in using any part of it, just reach out first. A quick message goes a long way.
