@@ -901,7 +901,7 @@ export const MapContent = ({ theme, onNavigate, onClose, router, isFocused, favo
                     <Animated.View entering={SlideInDown} exiting={FadeOutDown} style={[styles.detailCard, {
                         backgroundColor: Colors[colorScheme].cardBackground,
                         zIndex: 1000,
-                        bottom: 70,
+                        bottom: 70 + insets.bottom,
                         paddingBottom: Math.max(insets.bottom, 20),
                         borderTopLeftRadius: 8,
                         borderTopRightRadius: 8,

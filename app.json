@@ -67,9 +67,15 @@
     "extra": {
       "router": {},
       "eas": {
-        "projectId": "fa8462bd-597f-4ba4-8402-6ab329a7e05b"
+        "projectId": "8741d07d-7901-48c2-9c99-d6f7c802eb63"
       }
     },
-    "owner": "spectruh"
+    "owner": "spctr_e",
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/fa8462bd-597f-4ba4-8402-6ab329a7e05b"
+    }
   }
 }

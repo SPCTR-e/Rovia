@@ -13,7 +13,7 @@ import Animated, { Easing, useAnimatedStyle, useSharedValue, withTiming } from '
 const MAPBOX_TOKEN = 'pk.eyJ1Ijoic3BlY3RydWgiLCJhIjoiY21rNG5sNmh3MDF6NjNkczl5cGM3Ynl2aSJ9.U3vf9ao95WB7Xxx4n2Ihug';
 Mapbox.setAccessToken(MAPBOX_TOKEN);
 
-import { CATEGORIES } from '@/data/categories';
+import { getCategoryColor } from '@/constants/categoryColors';
 import { MUSEUMS } from '@/data/museums';
 import { RESTAURANTS } from '@/data/restaurants';
 import { SIGHTS, Sight } from '@/data/sights';
@@ -80,11 +80,10 @@ export default function SightDetailScreen() {
         );
     }
 
-    const categoryColor = CATEGORIES.find(c => c.id === sight.category)?.color || theme.primary;
+    const categoryColor = getCategoryColor(sight.category);
 
     const handleOpenMaps = () => {
-        router.dismissAll();
-        router.push({ pathname: '/', params: { category: 'map', poiId: sight?.id } });
+        router.replace({ pathname: '/', params: { category: 'map', poiId: sight?.id } });
     };
 
     useEffect(() => {
@@ -106,7 +105,7 @@ export default function SightDetailScreen() {
                 <View style={{ height: 350 }} />
                 <Animated.View style={[styles.detailsCard, { backgroundColor: theme.cardBackground }, animatedContentStyle]}>
                     { }
-                    <View style={[styles.categoryChip, { backgroundColor: categoryColor + '20' }]}>
+                    <View style={[styles.categoryChip, { backgroundColor: categoryColor + '20', borderWidth: 1, borderColor: categoryColor + '40' }]}>
                         <Text style={[styles.categoryText, { color: categoryColor }]}>{i18n.t(sight.category)}</Text>
                     </View>
 
@@ -120,7 +119,7 @@ export default function SightDetailScreen() {
 
                     { }
                     <Text style={[styles.sectionTitle, { color: theme.text, marginTop: 24 }]}>{i18n.t('about')}</Text>
-                    <Text style={[styles.description, { color: theme.text }]}>
+                    <Text style={[styles.description, { color: theme.textSecondary }]}>
                         {tData(sight, 'description') || tData(sight, 'shortDescription')}
                     </Text>
 
@@ -203,62 +202,15 @@ export default function SightDetailScreen() {
                         )
                     }
 
-                    { }
-                    {
-                        sight.coordinates && (
-                            <>
-                                <Text style={[styles.sectionTitle, { color: theme.text, marginTop: 24 }]}>{i18n.t('location')}</Text>
-
-                                <TouchableOpacity
-                                    activeOpacity={0.9}
-                                    onPress={handleOpenMaps}
-                                    style={styles.mapContainer}
-                                >
-                                    <Mapbox.MapView
-                                        style={styles.map}
-                                        styleURL={Mapbox.StyleURL.Street}
-                                        scrollEnabled={false}
-                                        zoomEnabled={false}
-                                        pitchEnabled={false}
-                                        rotateEnabled={false}
-                                        logoEnabled={false}
-                                        attributionEnabled={false}
-                                    >
-                                        <Mapbox.Camera
-                                            zoomLevel={14.5}
-                                            centerCoordinate={[sight.coordinates.longitude, sight.coordinates.latitude]}
-                                            animationMode="none"
-                                        />
-                                        <Mapbox.PointAnnotation
-                                            id={`marker-${sight.id}`}
-                                            coordinate={[sight.coordinates.longitude, sight.coordinates.latitude]}
-                                        >
-                                            <View style={[styles.marker, { backgroundColor: categoryColor }]}>
-                                                <View style={styles.markerInner} />
-                                            </View>
-                                        </Mapbox.PointAnnotation>
-                                    </Mapbox.MapView>
-
-
-
-                                    <TouchableOpacity style={[styles.openMapsButton, { backgroundColor: categoryColor }]} onPress={handleOpenMaps}>
-                                        <Ionicons name="map-outline" size={16} color="#FFF" style={{ marginRight: 8 }} />
-                                        <Text style={styles.openMapsText}>{i18n.t('mapView')}</Text>
-                                    </TouchableOpacity>
-                                </TouchableOpacity>
-                            </>
-                        )
-                    }
-
                     <View style={{ height: 40 }} />
                 </Animated.View >
             </ScrollView >
 
-            <TouchableOpacity onPress={() => router.back()} style={[styles.backButton, { backgroundColor: theme.background }]}>
+            <TouchableOpacity onPress={() => router.back()} style={[styles.backButton, { backgroundColor: theme.cardBackground, borderWidth: 1, borderColor: theme.border }]}>
                 <Ionicons name="arrow-back" size={24} color={theme.text} />
             </TouchableOpacity>
 
-            <TouchableOpacity onPress={handleToggleFavorite} style={[styles.favoriteButton, { backgroundColor: theme.background }]}>
+            <TouchableOpacity onPress={handleToggleFavorite} style={[styles.favoriteButton, { backgroundColor: theme.cardBackground, borderWidth: 1, borderColor: theme.border }]}>
                 <Ionicons name={isFav ? "heart" : "heart-outline"} size={24} color={isFav ? "#FF4B4B" : theme.text} />
             </TouchableOpacity>
 
@@ -272,62 +224,24 @@ const styles = StyleSheet.create({
     imageContainer: { position: 'absolute', top: 0, left: 0, right: 0, height: 400, width: '100%', zIndex: 0 },
     image: { width: '100%', height: '100%' },
     gradient: { position: 'absolute', bottom: 0, left: 0, right: 0, height: 200 },
-    backButton: { position: 'absolute', top: 55, left: 20, width: 44, height: 44, borderRadius: 22, alignItems: 'center', justifyContent: 'center', zIndex: 10, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.2, shadowRadius: 4, elevation: 4 },
-    favoriteButton: { position: 'absolute', top: 55, right: 20, width: 44, height: 44, borderRadius: 22, alignItems: 'center', justifyContent: 'center', zIndex: 10, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.2, shadowRadius: 4, elevation: 4 },
+    backButton: { position: 'absolute', top: 55, left: 20, width: 44, height: 44, borderRadius: 8, alignItems: 'center', justifyContent: 'center', zIndex: 10, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.2, shadowRadius: 4, elevation: 4 },
+    favoriteButton: { position: 'absolute', top: 55, right: 20, width: 44, height: 44, borderRadius: 8, alignItems: 'center', justifyContent: 'center', zIndex: 10, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.2, shadowRadius: 4, elevation: 4 },
     scrollContainer: { flex: 1, zIndex: 1 },
     contentContainer: { paddingBottom: 0 },
     detailsCard: {
-        borderTopLeftRadius: 32,
-        borderTopRightRadius: 32,
+        borderTopLeftRadius: 12,
+        borderTopRightRadius: 12,
         padding: 24,
         paddingBottom: 40,
         minHeight: 500,
         paddingTop: 32,
         marginTop: -40,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: -4 },
-        shadowOpacity: 0.1,
-        shadowRadius: 12,
-        elevation: 10
     },
-    categoryChip: { alignSelf: 'flex-start', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 12, marginBottom: 16 },
-    categoryText: { fontSize: 14, fontWeight: '700', textTransform: 'uppercase', letterSpacing: 0.5 },
-    title: { fontSize: 32, fontWeight: '700', marginBottom: 8, lineHeight: 40 },
+    categoryChip: { alignSelf: 'flex-start', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 6, marginBottom: 16 },
+    categoryText: { fontSize: 12, fontFamily: 'Outfit_400Regular', textTransform: 'uppercase', letterSpacing: 0.5 },
+    title: { fontSize: 36, fontFamily: 'CormorantGaramond_300Light', marginBottom: 8, lineHeight: 44 },
     locationRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 20 },
-    locationText: { fontSize: 16 },
-    sectionTitle: { fontSize: 20, fontWeight: '600', marginBottom: 12 },
-    description: { fontSize: 16, lineHeight: 26, opacity: 0.8 },
-    mapContainer: { height: 220, borderRadius: 20, overflow: 'hidden', marginTop: 8, position: 'relative' },
-    map: { flex: 1 },
-    mapOverlay: { ...StyleSheet.absoluteFillObject, zIndex: 0 },
-    expandButton: {
-        position: 'absolute',
-        top: 10,
-        right: 10,
-        width: 32,
-        height: 32,
-        borderRadius: 16,
-        backgroundColor: 'rgba(255,255,255,0.8)',
-        alignItems: 'center',
-        justifyContent: 'center'
-    },
-    openMapsButton: { position: 'absolute', bottom: 16, right: 16, flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 10, borderRadius: 24, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.2, shadowRadius: 4, elevation: 4, zIndex: 10 },
-    openMapsText: { color: '#FFF', fontSize: 14, fontWeight: '600' },
-    marker: { width: 24, height: 24, borderRadius: 12, alignItems: 'center', justifyContent: 'center', borderWidth: 2, borderColor: '#FFF', shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.2, shadowRadius: 3 },
-    markerInner: { width: 8, height: 8, borderRadius: 4, backgroundColor: '#FFF' },
-    closeMapButton: {
-        position: 'absolute',
-        top: 50,
-        left: 20,
-        width: 44,
-        height: 44,
-        borderRadius: 22,
-        alignItems: 'center',
-        justifyContent: 'center',
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.2,
-        shadowRadius: 4,
-        elevation: 6
-    }
+    locationText: { fontSize: 16, fontFamily: 'Outfit_300Light' },
+    sectionTitle: { fontSize: 20, fontFamily: 'Outfit_400Regular', marginBottom: 12, letterSpacing: 0.3 },
+    description: { fontSize: 16, lineHeight: 26, fontFamily: 'Outfit_300Light' },
 });

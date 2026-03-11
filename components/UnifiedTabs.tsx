@@ -129,6 +129,7 @@ export function UnifiedTabs() {
                 stiffness: 150,
                 mass: 0.8
             });
+            savedActiveIndex = index;
             updateActiveTab(index);
         }
 
