@@ -4,7 +4,7 @@ import { Colors } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { MaterialIcons } from '@expo/vector-icons';
 import polyline from '@mapbox/polyline';
-import Mapbox from '@rnmapbox/maps';
+import MapLibreGL, { type CameraRef } from '@maplibre/maplibre-react-native';
 import distance from '@turf/distance';
 import { lineString, point } from '@turf/helpers';
 import lineSlice from '@turf/line-slice';
@@ -39,6 +39,7 @@ import { SIGHTS } from '@/data/sights';
 import { TRANSPORT_LINES } from '@/data/transport_data_generated';
 import { TRANSPORT_STOPS } from '@/data/transport_stops';
 import { ParkingData, useParkingData } from '@/hooks/useParkingData';
+import { ToiletData, useToiletsData } from '@/hooks/useToiletsData';
 import i18n, { tData } from '@/i18n';
 import { ctsService, VehicleJourney } from '@/utils/cts';
 import { getDistance } from '@/utils/geo';
@@ -47,7 +48,7 @@ const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const CITY_CENTER = [7.74894, 48.58177];
 const INITIAL_ZOOM = 13.0;
 const CLOSED_STOP_NAMES = ["Langstross/Grand Rue", "Broglie", "Alt Winmärik-Vieux Marché aux Vins"];
-const MAPBOX_ACCESS_TOKEN = 'pk.eyJ1Ijoic3BlY3RydWgiLCJhIjoiY21rNG5sNmh3MDF6NjNkczl5cGM3Ynl2aSJ9.U3vf9ao95WB7Xxx4n2Ihug';
+
 const ROUTE_COLORS = ['#FF4B4B', '#4B7BFF', '#4BFF4B', '#FFD700', '#FF00FF', '#00FFFF', '#FF8C00', '#8A2BE2'];
 
 const getMapCategoryColor = (type: string) => {
@@ -80,7 +81,7 @@ const PoiMarker = React.memo(({ item, nearestStop, onPress, isSelected, theme }:
     }, [isSelected, item.type]);
 
     return (
-        <Mapbox.PointAnnotation
+        <MapLibreGL.PointAnnotation
             id={`poi-${item.id}`}
             coordinate={[item.coordinates.longitude, item.coordinates.latitude]}
             onSelected={() => onPress(item)}
@@ -136,49 +137,55 @@ const PoiMarker = React.memo(({ item, nearestStop, onPress, isSelected, theme }:
                     </View>
                 )}
             </RNAnimated.View>
-        </Mapbox.PointAnnotation>
+        </MapLibreGL.PointAnnotation>
     );
 });
-
-
-const ParkingMapMarker = ({ item, isFocused, onSelect, theme }: { item: ParkingData, isFocused: boolean, onSelect: () => void, theme: any }) => {
-    const scaleAnim = useRef(new RNAnimated.Value(1)).current;
-    const isOpen = item.etat_descriptif === 'Ouvert';
-    const percentFree = item.total > 0 ? (item.libre / item.total) : 0;
-    let color = theme.success;
-    if (!isOpen) color = theme.textSecondary;
-    else if (item.libre === 0 || percentFree < 0.1) color = theme.error;
-    else if (percentFree < 0.3) color = '#FFA500';
-
-    useEffect(() => {
-        RNAnimated.spring(scaleAnim, { toValue: isFocused ? 1.3 : 1, friction: 5, tension: 40, useNativeDriver: true }).start();
-    }, [isFocused]);
-
-    return (
-        <Mapbox.PointAnnotation
-            id={item.nom_parking}
-            coordinate={[item.position.lon, item.position.lat]}
-            title={item.nom_parking}
-            onSelected={onSelect}
-        >
-            <RNAnimated.View style={[
-                styles.marker,
-                { backgroundColor: color, zIndex: isFocused ? 999 : 1, transform: [{ scale: scaleAnim }] },
-            ]}>
-                <View style={[styles.markerInner, { backgroundColor: theme.background }]}><Text style={[styles.markerText, { color: color }]}>P</Text></View>
-            </RNAnimated.View>
-        </Mapbox.PointAnnotation>
-    );
-};
-
 // --- Main Extracted Map Component ---
 export const MapContent = ({ theme, onNavigate, onClose, router, isFocused, favorites = [], focusId }: any) => {
     const colorScheme = useColorScheme() ?? 'light';
-    const mapCamera = useRef<Mapbox.Camera>(null);
+    const mapCamera = useRef<CameraRef>(null);
     const [search, setSearch] = useState('');
     const [mapFilter, setMapFilter] = useState('all');
     const [legendVisible, setLegendVisible] = useState(false);
     const insets = useSafeAreaInsets();
+
+    // Data Hooks
+    const { data: parkingData } = useParkingData();
+    const { data: toiletsData } = useToiletsData();
+
+    const [selectedPoi, setSelectedPoi] = useState<any | null>(null);
+    const [selectedStop, setSelectedStop] = useState<any | null>(null);
+    const [selectedLineId, setSelectedLineId] = useState<string | null>(null);
+    const [selectedParking, setSelectedParking] = useState<ParkingData | null>(null);
+    const [selectedToilet, setSelectedToilet] = useState<ToiletData | null>(null);
+    const [followingUser, setFollowingUser] = useState(false);
+    const [cameraConfig, setCameraConfig] = useState<{ center: [number, number]; zoom?: number } | null>(null);
+
+    // Camera Focus Memory
+    const lastCenteredToiletId = useRef<string | null>(null);
+    const lastCenteredParkingId = useRef<string | null>(null);
+    const lastPinPressTime = useRef(0);
+
+    // Data State
+    const [allArrivals, setAllArrivals] = useState<VehicleJourney[]>([]);
+    const [arrivalsLoading, setArrivalsLoading] = useState(false);
+    const [arrivalFilter, setArrivalFilter] = useState<string | null>(null);
+    const [fetchError, setFetchError] = useState<string | null>(null);
+    const [walkRadiusGeoJSON, setWalkRadiusGeoJSON] = useState<any>(null);
+    const [userLocation, setUserLocation] = useState<any>(null);
+    const [routeCoords, setRouteCoords] = useState<any[]>([]);
+
+    const handleClearSelection = useCallback(() => {
+        setSelectedPoi(null);
+        setSelectedStop(null);
+        setSelectedParking(null);
+        setSelectedToilet(null);
+        setSelectedLineId(null);
+        setWalkRadiusGeoJSON(null);
+        lastCenteredToiletId.current = null;
+        lastCenteredParkingId.current = null;
+        setCameraConfig(null);
+    }, []);
 
     // ALL POIS
     const allPoiItems = useMemo(() => {
@@ -188,48 +195,86 @@ export const MapContent = ({ theme, onNavigate, onClose, router, isFocused, favo
             ...(MUSEUMS as any[]).map(i => ({ ...i, type: 'museums' })),
             ...BATORAMA_LOCATIONS.map(i => ({ ...i, type: 'batorama', image: BATORAMA_DATA.image }))
         ];
-
     }, []);
 
-    // Selection State
-    const [selectedPoi, setSelectedPoi] = useState<any | null>(null);
+    const handleToiletSelect = useCallback((item: ToiletData) => {
+        if (!item) return;
+        setSelectedToilet(item);
+        setSelectedPoi(null);
+        setSelectedStop(null);
+        setSelectedParking(null);
+        setFollowingUser(false);
+        
+        // Prevent re-centering if already focused on this toilet
+        if (lastCenteredToiletId.current === item.name) return;
 
-    const handlePoiPress = useCallback((poi: any) => {
-        setSelectedPoi(poi);
-        if (poi.coordinates) {
-            mapCamera.current?.setCamera({
-                centerCoordinate: [poi.coordinates.longitude, poi.coordinates.latitude],
-                zoomLevel: 15,
-                animationDuration: 1000,
-            });
+        const lon = item.position?.lon || item.point_geo?.lon;
+        const lat = item.position?.lat || item.point_geo?.lat;
+
+        if (lon && lat) {
+            lastCenteredToiletId.current = item.name;
+            setCameraConfig({ center: [lon, lat] });
         }
-    }, []);
+    }, [toiletsData]);
 
+    const handleParkingSelect = useCallback((item: ParkingData) => {
+        if (!item) return;
+        setSelectedParking(item);
+        setSelectedToilet(null);
+        setSelectedPoi(null);
+        setSelectedStop(null);
+        setFollowingUser(false);
+        
+        // Prevent re-centering if already focused on this parking
+        if (lastCenteredParkingId.current === item.name) return;
 
-    const [selectedStop, setSelectedStop] = useState<any | null>(null);
-    const [selectedLineId, setSelectedLineId] = useState<string | null>(null);
-    const [selectedParking, setSelectedParking] = useState<ParkingData | null>(null);
+        const lon = item.position?.lon || item.point_geo?.lon;
+        const lat = item.position?.lat || item.point_geo?.lat;
+
+        if (lon && lat) {
+            lastCenteredParkingId.current = item.name;
+            setCameraConfig({ center: [lon, lat] });
+        }
+    }, [parkingData]);
+
+    const toiletSource = useMemo(() => ({
+        type: 'FeatureCollection',
+        features: (toiletsData || []).map((t) => ({
+            type: 'Feature',
+            id: `t-${t.name}`,
+            geometry: { type: 'Point', coordinates: [t.position.lon, t.position.lat] },
+            properties: { ...t, isSelected: selectedToilet?.name === t.name }
+        }))
+    }), [toiletsData, selectedToilet]);
+
+    const parkingSource = useMemo(() => ({
+        type: 'FeatureCollection',
+        features: (parkingData || []).map((p) => ({
+            type: 'Feature',
+            id: `p-${p.name}`,
+            geometry: { type: 'Point', coordinates: [p.position.lon, p.position.lat] },
+            properties: { ...p, isSelected: selectedParking?.name === p.name }
+        }))
+    }), [parkingData, selectedParking]);
 
     // Map State
     const [layersVisible, setLayersVisible] = useState(false);
     const [isSeasonalMode, setIsSeasonalMode] = useState(false);
-    const [isLayersValues, setIsLayersValues] = useState({ landmarks: false, mainLines: true, parking: false, batorama: true });
+    const [isLayersValues, setIsLayersValues] = useState({ landmarks: false, mainLines: true, parking: false, batorama: true, toilets: false });
 
 
 
 
-    // Data State
-    const [allArrivals, setAllArrivals] = useState<VehicleJourney[]>([]);
-    const [arrivalsLoading, setArrivalsLoading] = useState(false);
-    const [arrivalFilter, setArrivalFilter] = useState<string | null>(null);
-    const [fetchError, setFetchError] = useState<string | null>(null);
-    const [walkRadiusGeoJSON, setWalkRadiusGeoJSON] = useState<any>(null);
-    const [followingUser, setFollowingUser] = useState(false);
-    const [userLocation, setUserLocation] = useState<any>(null);
-    const [routeCoords, setRouteCoords] = useState<any[]>([]);
-
-    // Parking Hooks
-    const { data: parkingData } = useParkingData();
+    const handlePoiPress = useCallback((poi: any) => {
+        setSelectedPoi(poi);
+        setSelectedStop(null);
+        setSelectedParking(null);
+        setSelectedToilet(null);
+        setFollowingUser(false);
+        if (poi.coordinates) {
+            setCameraConfig({ center: [poi.coordinates.longitude, poi.coordinates.latitude] });
+        }
+    }, []);
 
     const fetchArrivals = useCallback(async (stopName: string) => {
         setArrivalsLoading(true);
@@ -269,6 +314,7 @@ export const MapContent = ({ theme, onNavigate, onClose, router, isFocused, favo
         }
     }, []);
 
+
     const handleDirections = (item: any) => {
         if (!item.coordinates) return;
         const scheme = Platform.select({ ios: 'maps:0,0?q=', android: 'geo:0,0?q=' });
@@ -306,11 +352,7 @@ export const MapContent = ({ theme, onNavigate, onClose, router, isFocused, favo
             if (item) {
                 setSelectedPoi(item);
                 if (item.coordinates) {
-                    mapCamera.current?.setCamera({
-                        centerCoordinate: [item.coordinates.longitude, item.coordinates.latitude],
-                        zoomLevel: 16,
-                        animationDuration: 1000
-                    });
+                    setCameraConfig({ center: [item.coordinates.longitude, item.coordinates.latitude] });
                 }
             }
         }
@@ -424,7 +466,7 @@ export const MapContent = ({ theme, onNavigate, onClose, router, isFocused, favo
 
                             // We have 3 segments: Walk -> Tram -> Walk
                             // A. Start Walk
-                            const urlA = `https://api.mapbox.com/directions/v5/mapbox/walking/${startCoord.join(',')};${bestStartStop.coordinates.join(',')}?geometries=polyline6&overview=full&access_token=${MAPBOX_ACCESS_TOKEN}`;
+                            const urlA = `https://api.mapbox.com/directions/v5/mapbox/walking/${startCoord.join(',')};${bestStartStop.coordinates.join(',')}?geometries=polyline6&overview=full&access_token=YOUR_MAPBOX_TOKEN`;
                             const respA = await fetch(urlA).then(r => r.json());
                             if (respA.routes?.[0]) {
                                 newSegments.push({
@@ -442,7 +484,7 @@ export const MapContent = ({ theme, onNavigate, onClose, router, isFocused, favo
                             });
 
                             // C. End Walk
-                            const urlC = `https://api.mapbox.com/directions/v5/mapbox/walking/${bestEndStop.coordinates.join(',')};${endCoord.join(',')}?geometries=polyline6&overview=full&access_token=${MAPBOX_ACCESS_TOKEN}`;
+                            const urlC = `https://api.mapbox.com/directions/v5/mapbox/walking/${bestEndStop.coordinates.join(',')};${endCoord.join(',')}?geometries=polyline6&overview=full&access_token=YOUR_MAPBOX_TOKEN`;
                             const respC = await fetch(urlC).then(r => r.json());
                             if (respC.routes?.[0]) {
                                 newSegments.push({
@@ -460,7 +502,7 @@ export const MapContent = ({ theme, onNavigate, onClose, router, isFocused, favo
 
                 if (!transitFound) {
                     // Fallback: Full Walking Route
-                    const url = `https://api.mapbox.com/directions/v5/mapbox/walking/${startCoord.join(',')};${endCoord.join(',')}?geometries=polyline6&overview=full&access_token=${MAPBOX_ACCESS_TOKEN}`;
+                    const url = `https://api.mapbox.com/directions/v5/mapbox/walking/${startCoord.join(',')};${endCoord.join(',')}?geometries=polyline6&overview=full&access_token=YOUR_MAPBOX_TOKEN`;
 
                     try {
                         const response = await fetch(url);
@@ -591,34 +633,39 @@ export const MapContent = ({ theme, onNavigate, onClose, router, isFocused, favo
 
     return (
         <SafeAreaView style={{ flex: 1, backgroundColor: theme.background }}>
-            <Mapbox.MapView
+            <MapLibreGL.MapView
                 style={StyleSheet.absoluteFill}
-                styleURL="mapbox://styles/spectruh/cmkvi58o6007p01se6l820xty"
+                mapStyle="https://api.maptiler.com/maps/dataviz-v4/style.json?key=uTCw0BHhg9S8n3Rv0huT"
+                compassEnabled={false}
+                compassViewMargins={{ x: 0, y: 0 }}
+                compassViewPosition={3}
                 onPress={() => {
-                    setSelectedStop(null);
-                    setSelectedPoi(null);
-                    setSelectedParking(null);
-                    setWalkRadiusGeoJSON(null);
+                    if (Date.now() - lastPinPressTime.current > 300) {
+                        handleClearSelection();
+                    }
                 }}
             >
-                <Mapbox.Images images={{ 'batorama-logo': require('../../assets/images/icons/batorama-logo.png') }} />
-                <Mapbox.UserLocation
+                <MapLibreGL.Images images={{ 'batorama-logo': require('../../assets/images/icons/batorama-logo.png') }} />
+                <MapLibreGL.UserLocation
                     visible={true}
                     androidRenderMode="gps"
                     showsUserHeadingIndicator={true}
                 />
-                <Mapbox.Camera
+                <MapLibreGL.Camera
                     ref={mapCamera}
-                    defaultSettings={{ centerCoordinate: CITY_CENTER, zoomLevel: INITIAL_ZOOM }}
+                    defaultSettings={{ centerCoordinate: CITY_CENTER as [number, number], zoomLevel: INITIAL_ZOOM }}
+                    centerCoordinate={cameraConfig?.center}
+                    zoomLevel={cameraConfig?.zoom}
+                    animationDuration={cameraConfig ? 1000 : undefined}
                     followUserLocation={followingUser}
-                    followUserMode={Mapbox.UserTrackingMode.Follow}
+                    followUserMode={MapLibreGL.UserTrackingMode.Follow}
                     onUserTrackingModeChange={(e) => { if (!e.nativeEvent.payload.followUserLocation) setFollowingUser(false); }}
                 />
 
                 {/* Route Line */}
                 {routeSource && (
-                    <Mapbox.ShapeSource id="routeSource" shape={routeSource}>
-                        <Mapbox.LineLayer
+                    <MapLibreGL.ShapeSource id="routeSource" shape={routeSource}>
+                        <MapLibreGL.LineLayer
                             id="routeLayerSolid"
                             filter={['==', ['get', 'type'], 'transit']}
                             style={{
@@ -629,7 +676,7 @@ export const MapContent = ({ theme, onNavigate, onClose, router, isFocused, favo
                                 lineOpacity: 0.8
                             }}
                         />
-                        <Mapbox.LineLayer
+                        <MapLibreGL.LineLayer
                             id="routeLayerDashed"
                             filter={['==', ['get', 'type'], 'walking']}
                             style={{
@@ -641,12 +688,12 @@ export const MapContent = ({ theme, onNavigate, onClose, router, isFocused, favo
                                 lineOpacity: 0.8
                             }}
                         />
-                    </Mapbox.ShapeSource>
+                    </MapLibreGL.ShapeSource>
                 )}
 
                 {/* Lines */}
-                <Mapbox.ShapeSource id="linesSource" shape={transportSource}>
-                    <Mapbox.LineLayer
+                <MapLibreGL.ShapeSource id="linesSource" shape={transportSource}>
+                    <MapLibreGL.LineLayer
                         id="linesLayer"
                         style={{
                             lineColor: ['get', 'color'],
@@ -655,7 +702,7 @@ export const MapContent = ({ theme, onNavigate, onClose, router, isFocused, favo
                             lineJoin: 'round'
                         }}
                     />
-                    <Mapbox.LineLayer
+                    <MapLibreGL.LineLayer
                         id="lines-selected"
                         filter={['==', ['get', 'id'], selectedLineId || '']}
                         style={{
@@ -666,20 +713,21 @@ export const MapContent = ({ theme, onNavigate, onClose, router, isFocused, favo
                             lineOpacity: 1
                         }}
                     />
-                </Mapbox.ShapeSource>
+                </MapLibreGL.ShapeSource>
 
                 {/* Radius */}
                 {walkRadiusGeoJSON && (
-                    <Mapbox.ShapeSource id="radius" shape={walkRadiusGeoJSON}>
-                        <Mapbox.FillLayer id="radiusFill" style={{ fillColor: theme.primary, fillOpacity: 0.1 }} />
-                    </Mapbox.ShapeSource>
+                    <MapLibreGL.ShapeSource id="radius" shape={walkRadiusGeoJSON}>
+                        <MapLibreGL.FillLayer id="radiusFill" style={{ fillColor: theme.primary, fillOpacity: 0.1 }} />
+                    </MapLibreGL.ShapeSource>
                 )}
 
                 {/* Stops */}
-                <Mapbox.ShapeSource
+                <MapLibreGL.ShapeSource
                     id="stopsSource"
                     shape={stopsSource as any}
-                    onPress={(e) => {
+                    onPress={(e: any) => {
+                        lastPinPressTime.current = Date.now();
                         const feat = e.features[0];
                         if (feat.geometry?.type === 'Point') {
                             const coords = (feat.geometry as any).coordinates;
@@ -691,17 +739,23 @@ export const MapContent = ({ theme, onNavigate, onClose, router, isFocused, favo
                                     setSelectedPoi({ ...loc, type: 'batorama', image: BATORAMA_DATA.image });
                                     setSelectedStop({ ...props, coordinates: coords });
                                     setSelectedParking(null);
+                                    setSelectedToilet(null);
+                                    setFollowingUser(false);
+                                    setCameraConfig({ center: [coords[0], coords[1]] });
                                 }
                             } else if (props) {
                                 setSelectedStop({ ...props, coordinates: coords });
                                 setSelectedPoi(null);
                                 setSelectedParking(null);
+                                setSelectedToilet(null);
+                                setFollowingUser(false);
+                                setCameraConfig({ center: [coords[0], coords[1]] });
                             }
                         }
                     }}
                     hitbox={{ width: 20, height: 20 }}
                 >
-                    <Mapbox.CircleLayer
+                    <MapLibreGL.CircleLayer
                         id="stopsLayer"
                         minZoomLevel={12}
                         filter={isSeasonalMode
@@ -715,7 +769,7 @@ export const MapContent = ({ theme, onNavigate, onClose, router, isFocused, favo
                             circleStrokeWidth: 1.5
                         }}
                     />
-                    <Mapbox.CircleLayer
+                    <MapLibreGL.CircleLayer
                         id="stops-selected"
                         minZoomLevel={12}
                         aboveLayerID="stopsLayer"
@@ -730,7 +784,7 @@ export const MapContent = ({ theme, onNavigate, onClose, router, isFocused, favo
                             circleStrokeWidth: 3,
                         }}
                     />
-                    <Mapbox.SymbolLayer
+                    <MapLibreGL.SymbolLayer
                         id="batorama-stops"
                         minZoomLevel={12}
                         filter={['==', ['get', 'isBatorama'], true]}
@@ -740,7 +794,7 @@ export const MapContent = ({ theme, onNavigate, onClose, router, isFocused, favo
                             iconAllowOverlap: true,
                         }}
                     />
-                    <Mapbox.SymbolLayer
+                    <MapLibreGL.SymbolLayer
                         id="stopBadges"
                         aboveLayerID="stopsLayer"
                         minZoomLevel={13}
@@ -752,7 +806,7 @@ export const MapContent = ({ theme, onNavigate, onClose, router, isFocused, favo
                             iconAllowOverlap: true
                         }}
                     />
-                    <Mapbox.SymbolLayer
+                    <MapLibreGL.SymbolLayer
                         id="stopLabels"
                         aboveLayerID="stops-selected"
                         minZoomLevel={14.5}
@@ -767,7 +821,7 @@ export const MapContent = ({ theme, onNavigate, onClose, router, isFocused, favo
                             textOpacity: selectedLineId ? 1 : ['step', ['zoom'], 0, 15, 1]
                         }}
                     />
-                </Mapbox.ShapeSource>
+                </MapLibreGL.ShapeSource>
 
                 {/* POIs */}
                 {poiFeatures.map((item: any) => (
@@ -776,21 +830,101 @@ export const MapContent = ({ theme, onNavigate, onClose, router, isFocused, favo
 
 
                 {/* Parking Markers */}
-                {isLayersValues.parking && parkingData.map((item) => (
-                    <ParkingMapMarker
-                        key={item.nom_parking}
-                        item={item}
-                        theme={theme}
-                        isFocused={selectedParking?.nom_parking === item.nom_parking}
-                        onSelect={() => setSelectedParking(item)}
-                    />
-                ))}
-            </Mapbox.MapView>
+                {isLayersValues.parking && (
+                    <MapLibreGL.ShapeSource
+                        id="parkingSourceNew"
+                        shape={parkingSource as any}
+                        onPress={(e: any) => {
+                            lastPinPressTime.current = Date.now();
+                            if (e.features.length > 0) {
+                                const props = e.features[0].properties;
+                                if (props) {
+                                    const fullRecord = (parkingData || []).find(p => p.name === props.name);
+                                    if (fullRecord) handleParkingSelect(fullRecord);
+                                }
+                            }
+                        }}
+                    >
+                        <MapLibreGL.CircleLayer
+                            id="parkingCircleFocus"
+                            filter={['==', ['get', 'isSelected'], true]}
+                            style={{
+                                circleRadius: ['interpolate', ['linear'], ['zoom'], 12, 10, 16, 16],
+                                circleColor: '#FFFFFF',
+                                circleOpacity: 0.3,
+                            }}
+                        />
+                        <MapLibreGL.CircleLayer
+                            id="parkingCircle"
+                            style={{
+                                circleRadius: ['interpolate', ['linear'], ['zoom'], 12, 6, 16, 10],
+                                circleColor: ['match', ['get', 'etat_descriptif'], 'Ouvert', theme.success, theme.textSecondary],
+                                circleStrokeWidth: ['case', ['get', 'isSelected'], 2, 0],
+                                circleStrokeColor: '#FFFFFF',
+                            }}
+                        />
+                         <MapLibreGL.SymbolLayer
+                            id="parkingSymbol"
+                            style={{
+                                textField: 'P',
+                                textSize: 10,
+                                textColor: '#FFFFFF',
+                            }}
+                        />
+                    </MapLibreGL.ShapeSource>
+                )}
+
+                {/* Toilets Markers */}
+                {isLayersValues.toilets && (
+                    <MapLibreGL.ShapeSource
+                        id="toiletsSourceNew"
+                        shape={toiletSource as any}
+                        onPress={(e: any) => {
+                            lastPinPressTime.current = Date.now();
+                            if (e.features.length > 0) {
+                                const props = e.features[0].properties;
+                                if (props) {
+                                    const fullRecord = (toiletsData || []).find(t => t.name === props.name);
+                                    if (fullRecord) handleToiletSelect(fullRecord);
+                                }
+                            }
+                        }}
+                    >
+                        <MapLibreGL.CircleLayer
+                            id="toiletCircleFocus"
+                            filter={['==', ['get', 'isSelected'], true]}
+                            style={{
+                                circleRadius: ['interpolate', ['linear'], ['zoom'], 12, 10, 16, 16],
+                                circleColor: '#FFFFFF',
+                                circleOpacity: 0.3,
+                            }}
+                        />
+                        <MapLibreGL.CircleLayer
+                            id="toiletCircle"
+                            style={{
+                                circleRadius: ['interpolate', ['linear'], ['zoom'], 12, 6, 16, 10],
+                                circleColor: '#4A90C9',
+                                circleStrokeWidth: ['case', ['get', 'isSelected'], 2, 0],
+                                circleStrokeColor: '#FFFFFF',
+                            }}
+                        />
+                        <MapLibreGL.SymbolLayer
+                            id="toiletSymbol"
+                            style={{
+                                textField: '🚻',
+                                textSize: 10,
+                                textColor: '#FFFFFF',
+                                textOffset: [0, 0]
+                            }}
+                        />
+                    </MapLibreGL.ShapeSource>
+                )}
+            </MapLibreGL.MapView>
 
             {/* --- COMPLETE UI OVERLAYS --- */}
 
             {/* 1. Top Search Bar */}
-            {!selectedPoi && !selectedStop && !selectedParking && (
+            {!selectedPoi && !selectedStop && !selectedParking && !selectedToilet && (
                 <View style={[styles.mapSearchPill, { backgroundColor: theme.cardBackground, borderColor: theme.border }]}>
                     <IconSymbol name="magnifyingglass" size={18} color={theme.icon} />
                     <TextInput style={[styles.mapSearchInput, { color: theme.text }]} placeholder={i18n.t('searchPlaceholder')} value={search} onChangeText={setSearch} />
@@ -804,12 +938,15 @@ export const MapContent = ({ theme, onNavigate, onClose, router, isFocused, favo
                     if (!line) return null;
                     const isSelected = selectedLineId === line.id;
                     return (
-                        <TouchableOpacity key={l} onPress={() => setSelectedLineId(isSelected ? null : line.id)}
+                        <TouchableOpacity
+                            key={l}
+                            onPress={() => setSelectedLineId(isSelected ? null : line.id)}
                             style={[styles.legendItem, {
                                 backgroundColor: isSelected ? line.color : theme.cardBackground,
                                 borderColor: line.color,
                                 borderWidth: isSelected ? 0 : 2
-                            }]}>
+                            }]}
+                        >
                             <Text style={{ color: isSelected ? theme.background : theme.text, fontWeight: 'bold' }}>{l}</Text>
                         </TouchableOpacity>
                     );
@@ -818,7 +955,9 @@ export const MapContent = ({ theme, onNavigate, onClose, router, isFocused, favo
                 <View style={{ height: 1, backgroundColor: theme.border, marginVertical: 4, width: '80%', alignSelf: 'center' }} />
 
                 <TouchableOpacity
-                    onPress={() => setIsLayersValues(v => ({ ...v, batorama: !v.batorama }))}
+                    onPress={() => {
+                        setIsLayersValues(v => ({ ...v, batorama: !v.batorama }));
+                    }}
                     style={[styles.legendItem, {
                         backgroundColor: isLayersValues.batorama ? '#3498db' : theme.cardBackground,
                         borderColor: '#3498db',
@@ -831,7 +970,7 @@ export const MapContent = ({ theme, onNavigate, onClose, router, isFocused, favo
 
             {/* 3. Bottom Category Filters */}
             {/* 3. Bottom Category Filters (Map Legend) */}
-            {!selectedPoi && !selectedStop && !selectedParking && (
+            {!selectedPoi && !selectedStop && !selectedParking && !selectedToilet && (
                 <>
                     {legendVisible && (
                         <View style={{ position: 'absolute', bottom: 140 + insets.bottom, right: 20, zIndex: 100 }}>
@@ -855,9 +994,6 @@ export const MapContent = ({ theme, onNavigate, onClose, router, isFocused, favo
                                                 setMapFilter(f);
                                                 setIsLayersValues(v => ({ ...v, landmarks: true }));
                                             }
-                                            setSelectedPoi(null);
-                                            setSelectedStop(null);
-                                            setSelectedParking(null);
                                         }} style={{ flexDirection: 'row', alignItems: 'center', marginBottom: i === 2 ? 0 : 10 }}>
                                             <View style={{ width: 10, height: 10, borderRadius: 5, backgroundColor: getCategoryColor(f), marginRight: 6, opacity: isActive ? 1 : 0.5 }} />
                                             <Text style={{ fontSize: 12, fontWeight: '300', color: Colors[colorScheme].textSecondary, letterSpacing: 0.08 }}>
@@ -944,8 +1080,7 @@ export const MapContent = ({ theme, onNavigate, onClose, router, isFocused, favo
                                         style={[styles.smallCloseButton, { backgroundColor: Colors[colorScheme].border, marginLeft: 8 }]}
                                         onPress={(e) => {
                                             e.stopPropagation();
-                                            setSelectedPoi(null);
-                                            setSelectedStop(null);
+                                            handleClearSelection();
                                         }}
                                     >
                                         <IconSymbol name="xmark" size={14} color={Colors[colorScheme].text} />
@@ -989,7 +1124,7 @@ export const MapContent = ({ theme, onNavigate, onClose, router, isFocused, favo
                     <Animated.View entering={SlideInDown} exiting={FadeOutDown} style={[styles.detailCard, { backgroundColor: theme.cardBackground, zIndex: 1000, bottom: 75 + insets.bottom }]}>
                         <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
                             <Text style={[styles.detailTitle, { color: theme.text, flex: 1 }]}>{selectedStop.name}</Text>
-                            <TouchableOpacity style={[styles.closeLineButton, { backgroundColor: theme.border }]} onPress={() => setSelectedStop(null)}>
+                            <TouchableOpacity style={[styles.closeLineButton, { backgroundColor: theme.border }]} onPress={handleClearSelection}>
                                 <MaterialIcons name="close" size={20} color={theme.text} />
                             </TouchableOpacity>
                         </View>
@@ -1077,7 +1212,7 @@ export const MapContent = ({ theme, onNavigate, onClose, router, isFocused, favo
                     <Animated.View entering={SlideInDown} exiting={FadeOutDown} style={[styles.detailCard, { backgroundColor: theme.cardBackground, bottom: 70 + insets.bottom }]}>
                         <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
                             <Text style={[styles.detailTitle, { color: theme.text, flex: 1 }]}>{selectedParking.nom_parking?.replace('Parking ', '')}</Text>
-                            <TouchableOpacity style={[styles.closeLineButton, { backgroundColor: theme.border }]} onPress={() => setSelectedParking(null)}>
+                            <TouchableOpacity style={[styles.closeLineButton, { backgroundColor: theme.border }]} onPress={handleClearSelection}>
                                 <MaterialIcons name="close" size={20} color={theme.text} />
                             </TouchableOpacity>
                         </View>
@@ -1093,6 +1228,76 @@ export const MapContent = ({ theme, onNavigate, onClose, router, isFocused, favo
                                     }]} />
                                 </View>
                             )}
+                        </View>
+
+                        <View style={{ marginTop: 16, borderTopWidth: 1, borderTopColor: theme.border, paddingTop: 16 }}>
+                            <TouchableOpacity
+                                style={{ 
+                                    flexDirection: 'row', 
+                                    alignItems: 'center', 
+                                    justifyContent: 'center',
+                                    backgroundColor: theme.accent, 
+                                    paddingVertical: 12, 
+                                    borderRadius: 12,
+                                    gap: 8
+                                }}
+                                onPress={() => {
+                                    const { lat, lon } = selectedParking.point_geo;
+                                    const url = Platform.select({
+                                        ios: `maps://maps.apple.com/?ll=${lat},${lon}&q=${encodeURIComponent(selectedParking.name)}`,
+                                        android: `geo:${lat},${lon}?q=${lat},${lon}`
+                                    });
+                                    if (url) Linking.openURL(url);
+                                }}
+                            >
+                                <IconSymbol name="location.fill" size={18} color="#FFF" />
+                                <Text style={{ color: '#FFF', fontSize: 15, fontWeight: '600' }}>Get Directions</Text>
+                            </TouchableOpacity>
+                        </View>
+                    </Animated.View>
+                )
+            }
+
+            {/* Toilet Details */}
+            {
+                selectedToilet && (
+                    <Animated.View entering={SlideInDown} exiting={FadeOutDown} style={[styles.detailCard, { backgroundColor: theme.cardBackground, bottom: 70 + insets.bottom, paddingBottom: Math.max(insets.bottom, 20) }]}>
+                        <View style={{ width: 28, height: 3, borderRadius: 2, backgroundColor: theme.border, alignSelf: 'center', marginTop: 8, marginBottom: 12 }} />
+                        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <View style={{ flex: 1 }}>
+                                <Text style={[styles.detailTitle, { color: theme.text }]}>{selectedToilet.name}</Text>
+                                {selectedToilet.address && (
+                                    <Text style={{ color: theme.textSecondary, fontSize: 13, marginTop: 4 }}>{selectedToilet.address}</Text>
+                                )}
+                            </View>
+                            <TouchableOpacity style={[styles.closeLineButton, { backgroundColor: theme.border }]} onPress={handleClearSelection}>
+                                <MaterialIcons name="close" size={20} color={theme.text} />
+                            </TouchableOpacity>
+                        </View>
+                        
+                        <View style={{ marginTop: 16, borderTopWidth: 1, borderTopColor: theme.border, paddingTop: 16 }}>
+                            <TouchableOpacity
+                                style={{ 
+                                    flexDirection: 'row', 
+                                    alignItems: 'center', 
+                                    justifyContent: 'center',
+                                    backgroundColor: theme.accent, 
+                                    paddingVertical: 12, 
+                                    borderRadius: 12,
+                                    gap: 8
+                                }}
+                                onPress={() => {
+                                    const { lat, lon } = selectedToilet.point_geo;
+                                    const url = Platform.select({
+                                        ios: `maps://maps.apple.com/?ll=${lat},${lon}&q=${encodeURIComponent(selectedToilet.name)}`,
+                                        android: `geo:${lat},${lon}?q=${lat},${lon}`
+                                    });
+                                    if (url) Linking.openURL(url);
+                                }}
+                            >
+                                <IconSymbol name="location.fill" size={18} color="#FFF" />
+                                <Text style={{ color: '#FFF', fontSize: 15, fontWeight: '600' }}>Get Directions</Text>
+                            </TouchableOpacity>
                         </View>
                     </Animated.View>
                 )
@@ -1129,7 +1334,9 @@ export const MapContent = ({ theme, onNavigate, onClose, router, isFocused, favo
                             <Text style={{ fontFamily: 'Outfit_400Regular', fontSize: 12, fontWeight: '300', color: Colors[colorScheme].text }}>Lines & Batorama</Text>
                             <Switch
                                 value={isLayersValues.mainLines && isLayersValues.batorama}
-                                onValueChange={(val) => setIsLayersValues(v => ({ ...v, mainLines: val, batorama: val }))}
+                                onValueChange={(val) => {
+                                    setIsLayersValues(v => ({ ...v, mainLines: val, batorama: val }));
+                                }}
                                 trackColor={{ false: Colors[colorScheme].border, true: '#C9524A' }}
                                 thumbColor="#F5F0EB"
                             />
@@ -1138,7 +1345,20 @@ export const MapContent = ({ theme, onNavigate, onClose, router, isFocused, favo
                             <Text style={{ fontFamily: 'Outfit_400Regular', fontSize: 12, fontWeight: '300', color: Colors[colorScheme].text }}>Parking</Text>
                             <Switch
                                 value={isLayersValues.parking}
-                                onValueChange={(val) => setIsLayersValues(v => ({ ...v, parking: val }))}
+                                onValueChange={(val) => {
+                                    setIsLayersValues(v => ({ ...v, parking: val }));
+                                }}
+                                trackColor={{ false: Colors[colorScheme].border, true: '#C9524A' }}
+                                thumbColor="#F5F0EB"
+                            />
+                        </View>
+                        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
+                            <Text style={{ fontFamily: 'Outfit_400Regular', fontSize: 12, fontWeight: '300', color: Colors[colorScheme].text }}>Toilettes</Text>
+                            <Switch
+                                value={isLayersValues.toilets}
+                                onValueChange={(val) => {
+                                    setIsLayersValues(v => ({ ...v, toilets: val }));
+                                }}
                                 trackColor={{ false: Colors[colorScheme].border, true: '#C9524A' }}
                                 thumbColor="#F5F0EB"
                             />

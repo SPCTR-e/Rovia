@@ -76,23 +76,30 @@ const EmergencyModal = React.memo(({ info, onClose }: { info: EmergencyInfo | nu
                 <Animated.View
                     style={[
                         styles.expandedTipCard,
-                        { backgroundColor: theme.cardBackground, maxHeight: '75%' },
+                        {
+                            backgroundColor: theme.cardBackground,
+                            maxHeight: '75%',
+                            borderTopWidth: 1,
+                            borderTopColor: theme.border,
+                            borderRadius: 8,
+                            elevation: 0,
+                            shadowOpacity: 0,
+                        },
                         cardStyle
                     ]}
                 >
-                    <View style={[styles.expandedTipIconContainer, { backgroundColor: activeInfo.color }]}>
-                        <IconSymbol name={activeInfo.icon as any} size={32} color={theme.background} />
+                    <View style={styles.modalHeaderRow}>
+                        <IconSymbol name={activeInfo.icon as any} size={24} color={activeInfo.color} style={{ marginRight: 8 }} />
+                        <Text style={[styles.expandedTipTitle, { color: theme.text, fontFamily: 'CormorantGaramond_300Light' }]}>
+                            {tData(activeInfo, 'title')}
+                        </Text>
                     </View>
 
                     <TouchableOpacity style={styles.closeExpandedTip} onPress={onClose}>
-                        <IconSymbol name="xmark.circle.fill" size={28} color={theme.textSecondary} />
+                        <IconSymbol name="xmark" size={20} color={theme.textSecondary} />
                     </TouchableOpacity>
 
-                    <Text style={[styles.expandedTipTitle, { color: theme.text }]}>
-                        {tData(activeInfo, 'title')}
-                    </Text>
-
-                    <Text style={[styles.expandedTipContent, { color: theme.textSecondary, fontSize: 15, marginBottom: 20 }]}>
+                    <Text style={[styles.expandedTipContent, { color: theme.textSecondary, fontFamily: 'Outfit_300Light', fontSize: 16, marginBottom: 24 }]}>
                         {tData(activeInfo, 'description')}
                     </Text>
 
@@ -109,15 +116,15 @@ const EmergencyModal = React.memo(({ info, onClose }: { info: EmergencyInfo | nu
                                 disabled={!item.action}
                             >
                                 <View style={styles.emergencyItemLeft}>
-                                    <Text style={[styles.emergencyLabel, { color: theme.textSecondary }]}>{item.label}</Text>
-                                    <Text style={[styles.emergencyValue, { color: theme.text }]}>{item.value}</Text>
+                                    <Text style={[styles.emergencyLabel, { color: theme.textSecondary, fontFamily: 'Outfit_400Regular' }]}>{item.label}</Text>
+                                    <Text style={[styles.emergencyValue, { color: theme.text, fontFamily: 'Outfit_300Light' }]}>{item.value}</Text>
                                 </View>
                                 {item.action && (
-                                    <View style={[styles.emergencyActionIcon, { backgroundColor: activeInfo.color + '20' }]}>
+                                    <View style={[styles.emergencyActionIcon, { borderColor: theme.border, borderWidth: 1, backgroundColor: 'transparent' }]}>
                                         <IconSymbol
                                             name={item.action.startsWith('tel:') ? "phone.fill" : (item.action.startsWith('http') ? "globe" : "arrow.up.right")}
                                             size={16}
-                                            color={activeInfo.color}
+                                            color={theme.accent}
                                         />
                                     </View>
                                 )}
@@ -191,10 +198,7 @@ export function HomeContent({ onNavigate, onLanguageChange }: { onNavigate: (pat
                         onPress={() => setLanguageModalVisible(true)}
                         style={[styles.avatarContainer, { borderColor: theme.border }]}
                     >
-                        <Image
-                            source={require('@/assets/images/sights/petite-france.jpg')}
-                            style={styles.avatar}
-                        />
+                        <IconSymbol name="gearshape.fill" size={24} color={theme.textSecondary} />
                     </TouchableOpacity>
                 </View>
 
@@ -233,7 +237,6 @@ export function HomeContent({ onNavigate, onLanguageChange }: { onNavigate: (pat
                                     {
                                         backgroundColor: theme.cardBackground,
                                         borderColor: theme.border,
-                                        shadowColor: info.color
                                     }
                                 ]}
                             >
@@ -257,7 +260,6 @@ export function HomeContent({ onNavigate, onLanguageChange }: { onNavigate: (pat
                             {
                                 backgroundColor: theme.cardBackground,
                                 borderColor: theme.border,
-                                shadowColor: '#FF9800'
                             }
                         ]}
                     >
@@ -428,12 +430,12 @@ const styles = StyleSheet.create({
         fontWeight: '800',
     },
     avatarContainer: {
-        width: 50,
-        height: 50,
-        borderRadius: 25,
-        borderWidth: 2,
-        padding: 2,
-        overflow: 'hidden',
+        width: 44,
+        height: 44,
+        borderRadius: 22,
+        borderWidth: 1,
+        alignItems: 'center',
+        justifyContent: 'center',
     },
     avatar: {
         width: '100%',
@@ -646,18 +648,20 @@ const styles = StyleSheet.create({
     expandedTipCard: {
         width: '100%',
         maxHeight: '60%',
-        padding: 30,
-        borderRadius: 32,
-        elevation: 20,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 10 },
-        shadowOpacity: 0.3,
-        shadowRadius: 20,
+        paddingHorizontal: 24,
+        paddingTop: 32,
+        paddingBottom: 24,
+        borderRadius: 8,
         position: 'relative',
     },
+    modalHeaderRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginBottom: 16,
+    },
     expandedTipIconContainer: {
-        width: 64,
-        height: 64,
+        width: 44,
+        height: 44,
         borderRadius: 8,
         alignItems: 'center',
         justifyContent: 'center',
@@ -669,14 +673,13 @@ const styles = StyleSheet.create({
         right: 24,
     },
     expandedTipTitle: {
-        fontSize: 24,
-        fontWeight: '800',
-        marginBottom: 16,
+        fontSize: 22,
+        fontWeight: '300',
     },
     expandedTipContent: {
-        fontSize: 17,
-        lineHeight: 26,
-        fontWeight: '500',
+        fontSize: 16,
+        lineHeight: 24,
+        fontWeight: '300',
     },
     expandedTipFooter: {
         marginTop: 24,
@@ -687,10 +690,10 @@ const styles = StyleSheet.create({
         gap: 8,
     },
     footerText: {
-        fontSize: 13,
-        fontWeight: '600',
+        fontSize: 10,
+        fontWeight: '400',
         textTransform: 'uppercase',
-        letterSpacing: 1,
+        letterSpacing: 0.15,
     },
     emergencyContainer: {
         marginBottom: 30,
@@ -721,10 +724,6 @@ const styles = StyleSheet.create({
         padding: 12,
         borderRadius: 8,
         borderWidth: 1,
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.2,
-        shadowRadius: 8,
-        elevation: 3,
     },
     emergencyIconContainerSmall: {
         width: 40,
@@ -748,10 +747,6 @@ const styles = StyleSheet.create({
         borderRadius: 8,
         borderWidth: 1,
         justifyContent: 'space-between',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.2,
-        shadowRadius: 8,
-        elevation: 3,
     },
     guideIconContainer: {
         width: 56,
@@ -779,7 +774,7 @@ const styles = StyleSheet.create({
     },
     guideModalBackdrop: {
         flex: 1,
-        backgroundColor: 'rgba(0,0,0,0.5)',
+        backgroundColor: 'transparent',
         justifyContent: 'flex-end',
     },
     guideModalContent: {
@@ -796,14 +791,14 @@ const styles = StyleSheet.create({
         flex: 1,
     },
     emergencyLabel: {
-        fontSize: 12,
-        fontWeight: '600',
+        fontSize: 10,
+        fontWeight: '400',
+        letterSpacing: 0.15,
         textTransform: 'uppercase',
-        marginBottom: 4,
     },
     emergencyValue: {
         fontSize: 17,
-        fontWeight: '700',
+        fontWeight: '300',
     },
     emergencyActionIcon: {
         width: 36,
@@ -811,7 +806,7 @@ const styles = StyleSheet.create({
         borderRadius: 12,
         alignItems: 'center',
         justifyContent: 'center',
-    }
+    },
 });
 
 

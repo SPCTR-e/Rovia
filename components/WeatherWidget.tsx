@@ -149,7 +149,7 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
     },
     content: {
-        paddingVertical: 14,
+        paddingVertical: 10,
         paddingHorizontal: 16,
         borderRadius: 8,
         borderWidth: 1,
@@ -173,10 +173,10 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         gap: 8,
-        marginTop: 4,
+        marginTop: 3,
     },
     tempText: {
-        fontSize: 38,
+        fontSize: 36,
         fontWeight: '300',
         letterSpacing: -0.01,
     },
@@ -185,12 +185,12 @@ const styles = StyleSheet.create({
         fontWeight: '700',
         letterSpacing: 0.12,
         textTransform: 'uppercase',
-        marginTop: 8,
+        marginTop: 6,
     },
     divider: {
         height: 1,
         width: '100%',
-        marginVertical: 10,
+        marginVertical: 7,
     },
     descText: {
         fontSize: 13,

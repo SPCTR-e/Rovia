@@ -282,8 +282,8 @@ export function UnifiedTabs() {
     }));
 
     return (
-        <View style={[styles.container, { backgroundColor: theme.background }]}>
-            <GestureHandlerRootView style={styles.contentContainer}>
+        <View style={[styles.container, { backgroundColor: theme.background }]} collapsable={false}>
+            <GestureHandlerRootView style={styles.contentContainer} collapsable={false}>
                 <GestureDetector gesture={pan}>
                     <Animated.View
                         style={[styles.slider, animatedStyle]}

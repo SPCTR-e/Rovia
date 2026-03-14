@@ -6,27 +6,42 @@ import 'react-native-reanimated';
 import { AnimatedSplashScreen } from '@/components/AnimatedSplashScreen';
 import { FavoritesProvider } from '@/components/FavoritesContext';
 import { useColorScheme } from '@/hooks/use-color-scheme';
-import Mapbox from '@rnmapbox/maps';
-import { useState } from 'react';
+import MapLibreGL from '@maplibre/maplibre-react-native';
+import { useState, useEffect } from 'react';
 import { View } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { Colors } from '@/constants/theme';
 
-// Initialize Mapbox with token
-Mapbox.setAccessToken('pk.eyJ1Ijoic3BlY3RydWgiLCJhIjoiY21rNG5sNmh3MDF6NjNkczl5cGM3Ynl2aSJ9.U3vf9ao95WB7Xxx4n2Ihug');
+let hasShownSplash = false;
 
 export default function RootLayout() {
   const colorScheme = useColorScheme();
-  const [isAnimationFinished, setIsAnimationFinished] = useState(false);
+  const theme = Colors[colorScheme ?? 'light'];
+  const [isAnimationFinished, setIsAnimationFinished] = useState(hasShownSplash);
 
-  // We use a separate state to handle the splash screen removal to ensures 
-  // the Stack doesn't unmount/remount unexpectedly
+  // Safety fallback: Ensure splash unmounts even if animation callback misses
+  useEffect(() => {
+    if (!isAnimationFinished) {
+      const timer = setTimeout(() => {
+        setIsAnimationFinished(true);
+        hasShownSplash = true;
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [isAnimationFinished]);
+
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <FavoritesProvider>
         <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-          <View style={{ flex: 1 }}>
-            <Stack screenOptions={{ headerShown: false }}>
+          <View style={{ flex: 1, backgroundColor: theme.background, overflow: 'hidden' }} collapsable={false}>
+            <Stack screenOptions={{ 
+              headerShown: false, 
+              animation: 'none',
+              contentStyle: { backgroundColor: theme.background }
+            }}>
               <Stack.Screen name="index" />
+              <Stack.Screen name="onboarding" />
               <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal', headerShown: true }} />
               <Stack.Screen name="batorama" />
               <Stack.Screen name="sight/[id]" />
@@ -34,9 +49,10 @@ export default function RootLayout() {
 
             {!isAnimationFinished && (
               <AnimatedSplashScreen
-                onAnimationFinish={(finished) => {
-                  console.log('Splash animation finished');
-                  setIsAnimationFinished(finished);
+                onAnimationFinish={() => {
+                  console.log('Splash finished, unmounting officially.');
+                  hasShownSplash = true;
+                  setIsAnimationFinished(true);
                 }}
               />
             )}

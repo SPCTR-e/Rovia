@@ -1,6 +1,6 @@
 import * as SplashScreen from 'expo-splash-screen';
-import React, { useEffect } from 'react';
-import { Dimensions, Image, StyleSheet } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { Dimensions, Image, StyleSheet, useColorScheme, View } from 'react-native';
 import Animated, {
     Easing,
     runOnJS,
@@ -10,7 +10,7 @@ import Animated, {
     withTiming
 } from 'react-native-reanimated';
 
-const { width, height } = Dimensions.get('window');
+const { width } = Dimensions.get('window');
 
 // Keep the splash screen visible while we fetch resources
 try {
@@ -22,54 +22,99 @@ interface Props {
 }
 
 export function AnimatedSplashScreen({ onAnimationFinish }: Props) {
+    const colorScheme = useColorScheme();
+    const isDark = colorScheme !== 'light';
+
     const logoScale = useSharedValue(0.3);
     const logoOpacity = useSharedValue(0);
+    const wordmarkOpacity = useSharedValue(0);
     const containerOpacity = useSharedValue(1);
+    const [isFadingOut, setIsFadingOut] = useState(false);
+
+    const [step, setStep] = useState(0);
 
     useEffect(() => {
-        // Start animation sequence
-        logoOpacity.value = withTiming(1, { duration: 800 });
+        // Step 1: Fade + scale in the Rovia icon
+        logoOpacity.value = withTiming(1, { duration: 600 });
         logoScale.value = withTiming(1, {
-            duration: 1000,
-            easing: Easing.bezier(0.25, 0.1, 0.25, 1)
-        }, (finished) => {
-            if (finished) {
-                // Wait a bit, then fade out the whole container
-                containerOpacity.value = withDelay(500, withTiming(0, { duration: 600 }, (isDone) => {
-                    if (isDone) {
-                        runOnJS(onAnimationFinish)(true);
-                    }
-                }));
-            }
+            duration: 800,
+            easing: Easing.out(Easing.back(1.2))
+        }, () => {
+            runOnJS(setStep)(1);
         });
-
-        // Hide the native splash screen after a short delay to ensure our custom one is rendered
-        const timer = setTimeout(async () => {
-            try {
-                await SplashScreen.hideAsync();
-            } catch (e) {
-                console.warn('Failed to hide splash screen:', e);
-            }
-        }, 500); // Increased delay slightly for stability
-
-        return () => clearTimeout(timer);
     }, []);
+
+    useEffect(() => {
+        if (step === 1) {
+            // Step 2: Show Wordmark
+            wordmarkOpacity.value = withTiming(1, { duration: 500 }, () => {
+                runOnJS(setStep)(2);
+            });
+        }
+        if (step === 2) {
+            // Signal that we are starting to leave (for pointerEvents)
+            runOnJS(setIsFadingOut)(true);
+
+            // Step 3: Fade out everything
+            containerOpacity.value = withDelay(800, withTiming(0, { duration: 500 }, () => {
+                // DEFENSIVE: Always call finish, don't check for 'done'
+                runOnJS(onAnimationFinish)(true);
+            }));
+            
+            // Absolute safety fallback for this component
+            const timer = setTimeout(() => {
+                onAnimationFinish(true);
+            }, 2500);
+            return () => clearTimeout(timer);
+        }
+    }, [step]);
 
     const logoStyle = useAnimatedStyle(() => ({
         opacity: logoOpacity.value,
         transform: [{ scale: logoScale.value }],
     }));
 
+    const wordmarkStyle = useAnimatedStyle(() => ({
+        opacity: wordmarkOpacity.value,
+    }));
+
     const containerStyle = useAnimatedStyle(() => ({
         opacity: containerOpacity.value,
     }));
 
+    const bgColor = isDark ? '#1A1A1A' : '#F5F0EB';
+
+    // Dark bg → black Rovia icon + black SPCTR/e wordmark
+    // Light bg → white Rovia icon + white SPCTR/e wordmark
+    const roviaIcon = isDark
+        ? require('../assets/images/roviaiconsplashblack.png')
+        : require('../assets/images/roviaiconsplashwhite.png');
+
+    const spctreIcon = isDark
+        ? require('../assets/images/spctreiconsplashblack.png')
+        : require('../assets/images/spctreiconsplashwhite.png');
+
     return (
-        <Animated.View style={[styles.container, containerStyle]}>
-            <Animated.View style={[styles.logoContainer, logoStyle]}>
+        <Animated.View 
+            pointerEvents={isFadingOut ? "none" : "auto"}
+            style={[styles.container, { backgroundColor: bgColor }, containerStyle]}
+        >
+            {/* Center: Rovia icon */}
+            <View style={styles.centerContent}>
+                <Animated.View style={[styles.logoContainer, logoStyle]}>
+                    <Image
+                        source={roviaIcon}
+                        style={styles.logo}
+                        resizeMode="contain"
+                    />
+                </Animated.View>
+            </View>
+
+            {/* Bottom: SPCTR/e wordmark */}
+            <Animated.View style={[styles.wordmarkContainer, wordmarkStyle]}>
                 <Image
-                    source={require('../assets/images/logo-final.png')}
-                    style={styles.logo}
+                    source={spctreIcon}
+                    style={styles.wordmark}
                     resizeMode="contain"
                 />
             </Animated.View>
@@ -80,19 +125,31 @@ export function AnimatedSplashScreen({ onAnimationFinish }: Props) {
 const styles = StyleSheet.create({
     container: {
         ...StyleSheet.absoluteFillObject,
-        backgroundColor: '#000000',
+        zIndex: 9999,
         alignItems: 'center',
         justifyContent: 'center',
-        zIndex: 9999,
+    },
+    centerContent: {
+        flex: 1,
+        alignItems: 'center',
+        justifyContent: 'center',
     },
     logoContainer: {
-        width: width * 0.7,
-        height: width * 0.7,
+        width: 180,
+        height: 180,
         alignItems: 'center',
         justifyContent: 'center',
     },
     logo: {
         width: '100%',
         height: '100%',
+    },
+    wordmarkContainer: {
+        alignItems: 'center',
+        paddingBottom: 40,
+    },
+    wordmark: {
+        width: 160,
+        height: 64,
     },
 });

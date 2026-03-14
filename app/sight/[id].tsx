@@ -1,6 +1,6 @@
 import i18n, { tData } from '@/i18n';
 import { Ionicons } from '@expo/vector-icons';
-import Mapbox from '@rnmapbox/maps';
+
 import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Stack, useLocalSearchParams, useNavigation, useRouter } from 'expo-router';
@@ -10,8 +10,7 @@ import Animated, { Easing, useAnimatedStyle, useSharedValue, withTiming } from '
 
 
 
-const MAPBOX_TOKEN = 'pk.eyJ1Ijoic3BlY3RydWgiLCJhIjoiY21rNG5sNmh3MDF6NjNkczl5cGM3Ynl2aSJ9.U3vf9ao95WB7Xxx4n2Ihug';
-Mapbox.setAccessToken(MAPBOX_TOKEN);
+
 
 import { getCategoryColor } from '@/constants/categoryColors';
 import { MUSEUMS } from '@/data/museums';
@@ -93,10 +92,10 @@ export default function SightDetailScreen() {
 
     return (
         <View style={[styles.container, { backgroundColor: theme.background }]}>
-            <Stack.Screen options={{ title: '', headerShown: false }} />
+            <Stack.Screen options={{ title: '', headerShown: false, animation: 'slide_from_bottom' }} />
             { }
             <View style={styles.imageContainer}>
-                <Image source={sight.image} style={styles.image} contentFit="cover" transition={1000} />
+                <Image source={sight.image} style={styles.image} contentFit="cover" transition={300} />
                 <LinearGradient colors={['transparent', 'rgba(0,0,0,0.8)']} style={styles.gradient} />
 
             </View>

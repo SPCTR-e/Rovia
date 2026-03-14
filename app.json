@@ -4,8 +4,8 @@
     "slug": "rovia",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/logo-final.png",
-    "scheme": "straspire",
+    "icon": "./assets/images/rovia-app-icon-1024.png",
+    "scheme": "rovia",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
@@ -14,10 +14,9 @@
     },
     "android": {
       "adaptiveIcon": {
-        "backgroundColor": "#000000",
-        "foregroundImage": "./assets/images/logo-final.png",
-        "backgroundImage": "./assets/images/android-icon-background.png",
-        "monochromeImage": "./assets/images/android-icon-monochrome.png"
+        "foregroundImage": "./assets/images/rovia-app-icon-1024.png",
+        "backgroundColor": "#1A1A1A",
+        "backgroundImage": "./assets/images/android-icon-background.png"
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
@@ -36,12 +35,12 @@
       [
         "expo-splash-screen",
         {
-          "image": "./assets/images/logo-final.png",
+          "image": "./assets/images/roviaiconsplashblack.png",
           "imageWidth": 200,
           "resizeMode": "contain",
-          "backgroundColor": "#000000",
+          "backgroundColor": "#1A1A1A",
           "dark": {
-            "backgroundColor": "#000000"
+            "backgroundColor": "#1A1A1A"
           }
         }
       ],
@@ -52,13 +51,7 @@
         }
       ],
       "expo-localization",
-      [
-        "@rnmapbox/maps",
-        {
-          "RNMapboxMapsImpl": "mapbox",
-          "downloadOnEagerInit": false
-        }
-      ]
+      "@maplibre/maplibre-react-native"
     ],
     "experiments": {
       "typedRoutes": true,

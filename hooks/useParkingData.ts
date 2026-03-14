@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 
 export interface ParkingData {
     nom_parking: string;
+    name: string;
     etat_descriptif: string;
     libre: number;
     total: number;
@@ -9,7 +10,12 @@ export interface ParkingData {
         lon: number;
         lat: number;
     };
+    point_geo: {
+        lon: number;
+        lat: number;
+    };
     taux_occup: number;
+    [key: string]: any;
 }
 
 const API_URL = 'https://data.strasbourg.eu/api/explore/v2.1/catalog/datasets/occupation-parkings-temps-reel/records?limit=40';
@@ -38,11 +44,14 @@ export function useParkingData() {
             
             const parkings = json.results
                 .map((record: any) => ({
+                    ...record,
                     nom_parking: record.nom_parking,
+                    name: record.nom_parking,
                     etat_descriptif: record.etat_descriptif,
                     libre: record.libre,
                     total: record.total,
                     position: record.position,
+                    point_geo: record.position,
                     taux_occup: record.taux_occup
                 }))
                 
